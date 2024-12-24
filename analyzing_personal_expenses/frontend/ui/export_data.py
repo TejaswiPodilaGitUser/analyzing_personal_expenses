@@ -6,9 +6,33 @@ from PIL import Image
 from fpdf import FPDF
 
 # Function to save DataFrame as CSV
-def save_as_csv(df, filename="expenses_data.csv"):
-    df.to_csv(filename, index=False)
+import pandas as pd
+
+def save_as_csv(df, filename="expenses_data.csv", user_name="User 1", selected_month=None):
+    """
+    Save the DataFrame as a CSV file with a dynamic title.
+    
+    Args:
+    - df (pandas.DataFrame): The data to be saved as CSV.
+    - filename (str): The name of the CSV file to save.
+    - user_name (str): The name of the user (e.g., "User 1").
+    - selected_month (str or None): The selected month. If None, it indicates year-level data.
+    
+    Returns:
+    - str: The filename of the saved CSV file.
+    """
+    if selected_month:
+        title = f"Expense Data for {user_name} - {selected_month} Month"
+    else:
+        title = f"Expense Data for {user_name} - Yearly Overview"
+    
+    # Open the CSV file and write the title and data
+    with open(filename, 'w', newline='') as f:
+        f.write(f"{title}\n")  # Write title as the first line
+        df.to_csv(f, index=False)  # Write the DataFrame below the title line
+    
     return filename
+
 
 # Function to save DataFrame as PDF with table format
 def save_as_pdf(df, filename="expenses_data.pdf"):
@@ -18,7 +42,7 @@ def save_as_pdf(df, filename="expenses_data.pdf"):
     
     # Add Title and Subtitle for PDF
     pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="Expense Report", ln=True, align='C')
+    #pdf.cell(200, 10, txt="Expense Report", ln=True, align='C')
     pdf.ln(10)  # Add a line break
     pdf.set_font("Arial", 'I', 12)
     pdf.cell(200, 10, txt="Top 10 Spending Categories", ln=True, align='C')

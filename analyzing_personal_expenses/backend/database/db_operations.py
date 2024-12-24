@@ -37,3 +37,16 @@ class DatabaseOperations:
         conn.close()
 
         return pd.DataFrame(data, columns=['expense_date', 'category_name', 'amount_paid'])
+
+    # Fetch users from the 'users' table
+    def fetch_users(self):
+        query = "SELECT user_id, user_name FROM users WHERE role = 'user'"  # Only fetch users
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        
+        # Fetch all users (user_id and user_name)
+        users = cursor.fetchall()
+        conn.close()
+        
+        return {user[1]: user[0] for user in users}  # Return a dictionary with user_name as key and user_id as value
