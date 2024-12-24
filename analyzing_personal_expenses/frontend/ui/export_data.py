@@ -10,13 +10,38 @@ def save_as_csv(df, filename="expenses_data.csv"):
     df.to_csv(filename, index=False)
     return filename
 
-# Function to save DataFrame as PDF
+# Function to save DataFrame as PDF with table format
 def save_as_pdf(df, filename="expenses_data.pdf"):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    for row in df.values:
-        pdf.cell(200, 10, txt=str(row), ln=True)
+    
+    # Add Title and Subtitle for PDF
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(200, 10, txt="Expense Report", ln=True, align='C')
+    pdf.ln(10)  # Add a line break
+    pdf.set_font("Arial", 'I', 12)
+    pdf.cell(200, 10, txt="Top 10 Spending Categories", ln=True, align='C')
+    pdf.ln(10)
+    
+    # Define column widths based on the table's structure
+    col_widths = [80, 80]  # Adjust these values based on your data
+    row_height = 10
+    
+    # Header
+    pdf.set_font("Arial", 'B', 12)
+    for i, col_name in enumerate(df.columns):
+        pdf.cell(col_widths[i], row_height, col_name, border=1, align='C')
+    pdf.ln(row_height)
+    
+    # Data rows
+    pdf.set_font("Arial", size=12)
+    for index, row in df.iterrows():
+        for i, val in enumerate(row):
+            pdf.cell(col_widths[i], row_height, str(val), border=1, align='C')
+        pdf.ln(row_height)
+    
+    # Save the PDF
     pdf.output(filename)
     return filename
 
