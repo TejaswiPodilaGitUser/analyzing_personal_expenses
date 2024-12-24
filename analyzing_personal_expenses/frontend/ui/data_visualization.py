@@ -54,7 +54,14 @@ class DataVisualization:
 
     def get_insights(self, df):
         """Get insights such as max and min spending categories."""
+        # Ensure 'amount_paid' exists in the DataFrame
+        if 'amount_paid' not in df.columns:
+            raise KeyError("The 'amount_paid' column is missing in the data.")
+        
+        # Group by category and calculate total amount spent per category
         grouped = df.groupby('category_name')['amount_paid'].sum()
+        
+        # Return insights on max and min spending categories
         return {
             "max_category": grouped.idxmax(),
             "max_amount": grouped.max(),
