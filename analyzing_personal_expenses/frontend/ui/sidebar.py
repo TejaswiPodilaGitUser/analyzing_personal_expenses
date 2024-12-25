@@ -31,7 +31,7 @@ def display_sidebar(users):
     # Chart Type
     chart_type = st.sidebar.selectbox(
         "Chart Type", 
-        ["Pie", "Bar"], 
+        ["Pie", "Bar","Scatter"], 
         index=0
     )
 

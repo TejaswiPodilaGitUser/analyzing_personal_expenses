@@ -3,6 +3,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
+from frontend.ui.scatter_chart import plot_scatter_chart
 from backend.database.db_operations import DatabaseOperations
 from io import StringIO
 
@@ -62,10 +63,13 @@ class DataVisualization:
                 title=f"Spending Categories - {selected_month}"
             )
         elif chart_type.lower() == "pie":
-            plot_pie_chart(
-                monthly_expenses,
-                title=f"Spending Categories - {selected_month}"
-            )
+            plot_pie_chart(monthly_expenses, title=f"Spending Categories - {selected_month}", chart_size=(6, 4))
+
+        elif chart_type.lower() == "scatter":
+            # Use the updated plot_scatter_chart function
+            fig = plot_scatter_chart(filtered_df, x='category_name', y='amount_paid', title=f"Expense Scatter Plot - {selected_month}")
+            if fig:
+                st.pyplot(fig)
 
         # Enable CSV download
         report_title = f"Top 10 Expenses for {selected_month}"
@@ -106,10 +110,14 @@ class DataVisualization:
                 title="Yearly Expenses Overview"
             )
         elif chart_type.lower() == "pie":
-            plot_pie_chart(
-                yearly_expenses,
-                title="Yearly Expenses Overview"
-            )
+            plot_pie_chart(yearly_expenses, title="Yearly Expenses Overview", chart_size=(6, 4))
+
+        elif chart_type.lower() == "scatter":
+            # Use the updated plot_scatter_chart function
+            fig = plot_scatter_chart(df, x='category_name', y='amount_paid', title="Yearly Expense Scatter Plot")
+            if fig:
+                st.pyplot(fig)
+
 
         report_title = "Top 10 Annual Expenses"   
         self.download_csv(df, report_title)

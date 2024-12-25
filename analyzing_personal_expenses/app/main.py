@@ -56,7 +56,7 @@ def main():
         elif visualization_type == "Yearly":
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown(f"### 💰 Top 10 Yearly Expenses")
+                st.markdown("### 💰 Top 10 Yearly Expenses")
                 top_10_df = dv.get_top_spending_categories(df)
                 st.dataframe(top_10_df)
             with col2:

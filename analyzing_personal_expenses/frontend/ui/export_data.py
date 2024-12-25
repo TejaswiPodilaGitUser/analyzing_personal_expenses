@@ -31,7 +31,7 @@ class ExportData:
 
     def export_pdf(self):
         try:
-            filename = save_as_pdf(self.df)
+            filename = save_as_pdf(self.df, self.user_name, self.selected_month)
             with open(filename, "rb") as file:
                 st.sidebar.download_button("Download PDF", file.read(), file_name=filename)
         except Exception as e:
