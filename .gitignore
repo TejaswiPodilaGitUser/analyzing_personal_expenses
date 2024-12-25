@@ -1,2 +1,8 @@
 .env
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+# Ignore CSV and PDF files
+*.csv
+*.pdf
 
