@@ -119,11 +119,10 @@ class DataVisualization:
         if df.empty:
             st.warning("No data available to download as CSV.")
             return
-        
+
         # Prepare CSV content
         csv_data = df.to_csv(index=False)
 
-        
 
     def get_top_spending_categories(self, df):
         """Get the top 10 spending categories."""

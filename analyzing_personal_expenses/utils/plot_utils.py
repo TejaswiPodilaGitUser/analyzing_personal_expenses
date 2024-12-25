@@ -3,19 +3,23 @@ import os
 from fpdf import FPDF
 
 def save_as_csv(df, user_name, selected_month):
-    """Save data to CSV."""
-    # Debugging statement
-    print(f"In Plot_utils . Saving data to CSV for user: {user_name} and month: {selected_month}")
-    
+    """Save data to CSV with appropriate naming."""
     # Handle different cases for filename generation
-    if user_name == "All Users" and selected_month is None:
-        filename = "All_Users_top_10_Annual_expenses.csv"
+    if selected_month is None:
+        if user_name == "All Users":
+            filename = "All_Users_Annual_Top_10_Expenses.csv"
+        else:
+            filename = f"{user_name}_Annual_Top_10_Expenses.csv"
     else:
-        filename = f"{user_name}_{selected_month}_top_10_expenses.csv"
+        if user_name == "All Users":
+            filename = f"All_Users_{selected_month}_Top_10_Expenses.csv"
+        else:
+            filename = f"{user_name}_{selected_month}_Top_10_Expenses.csv"
     
+    # Save the DataFrame to CSV
     df.to_csv(filename, index=False)
+    print(f"CSV file saved as: {filename}")
     return filename
-
 
 
 def save_as_pdf(df):

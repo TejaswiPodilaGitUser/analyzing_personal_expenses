@@ -22,13 +22,8 @@ class ExportData:
 
     def export_csv(self):
         """Handles CSV export."""
-        print("In ExportData class before Try- User name ",self.user_name," Month ",self.selected_month)
         try:
             filename = save_as_csv(self.df, self.user_name, self.selected_month)
-            #print (filename)
-            print(f"In Exported Data class- Exported CSV: {filename}")
-            #print user_name and self.selected_month
-            print("In ExportData class- User name ",self.user_name," Month ",self.selected_month)
             with open(filename, "rb") as file:
                 st.sidebar.download_button("Download CSV", file.read(), file_name=filename)
         except Exception as e:

@@ -25,7 +25,6 @@ def main():
 
     # Sidebar: User and Filter Selections
     user_id, visualization_type, chart_type, selected_month = sidebar.display_sidebar(users)
-    print(f"In main.py User ID: {user_id},  Selected Month: {selected_month}")
 
     # Fetch User Data
     dv = DataVisualization(user_id=user_id)

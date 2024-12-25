@@ -17,7 +17,6 @@ def populate_users(get_db_connection):
     cursor = conn.cursor()
 
     users = [
-        ("admin", "admin@example.com", "admin_password", "admin"),
         ("user1", "user1@example.com", "user1_password", "user"),
         ("user2", "user2@example.com", "user2_password", "user"),
         ("user3", "user3@example.com", "user3_password", "user"),
