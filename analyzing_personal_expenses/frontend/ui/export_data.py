@@ -1,125 +1,43 @@
-import psutil
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from PIL import Image
-from fpdf import FPDF
-
-# Function to save DataFrame as CSV
 import pandas as pd
-
-def save_as_csv(df, filename="expenses_data.csv", user_name="User 1", selected_month=None):
-    """
-    Save the DataFrame as a CSV file with a dynamic title.
-    
-    Args:
-    - df (pandas.DataFrame): The data to be saved as CSV.
-    - filename (str): The name of the CSV file to save.
-    - user_name (str): The name of the user (e.g., "User 1").
-    - selected_month (str or None): The selected month. If None, it indicates year-level data.
-    
-    Returns:
-    - str: The filename of the saved CSV file.
-    """
-    if selected_month:
-        title = f"Expense Data for {user_name} - {selected_month} Month"
-    else:
-        title = f"Expense Data for {user_name} - Yearly Overview"
-    
-    # Open the CSV file and write the title and data
-    with open(filename, 'w', newline='') as f:
-        f.write(f"{title}\n")  # Write title as the first line
-        df.to_csv(f, index=False)  # Write the DataFrame below the title line
-    
-    return filename
+import streamlit as st
+from utils.plot_utils import save_as_csv, save_as_pdf, capture_screenshot
 
 
-# Function to save DataFrame as PDF with table format
-def save_as_pdf(df, filename="expenses_data.pdf"):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    
-    # Add Title and Subtitle for PDF
-    pdf.set_font("Arial", 'B', 16)
-    #pdf.cell(200, 10, txt="Expense Report", ln=True, align='C')
-    pdf.ln(10)  # Add a line break
-    pdf.set_font("Arial", 'I', 12)
-    pdf.cell(200, 10, txt="Top 10 Spending Categories", ln=True, align='C')
-    pdf.ln(10)
-    
-    # Define column widths based on the table's structure
-    col_widths = [80, 80]  # Adjust these values based on your data
-    row_height = 10
-    
-    # Header
-    pdf.set_font("Arial", 'B', 12)
-    for i, col_name in enumerate(df.columns):
-        pdf.cell(col_widths[i], row_height, col_name, border=1, align='C')
-    pdf.ln(row_height)
-    
-    # Data rows
-    pdf.set_font("Arial", size=12)
-    for index, row in df.iterrows():
-        for i, val in enumerate(row):
-            pdf.cell(col_widths[i], row_height, str(val), border=1, align='C')
-        pdf.ln(row_height)
-    
-    # Save the PDF
-    pdf.output(filename)
-    return filename
+class ExportData:
+    def __init__(self, df, selected_month, user_name):
+        self.df = df
+        self.selected_month = selected_month
+        self.user_name = user_name
 
-# Function to dynamically retrieve the Streamlit app URL
-def get_streamlit_url():
-    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-        if 'streamlit' in proc.info['name']:
-            # Check the command line arguments for the port
-            for arg in proc.info['cmdline']:
-                if '--server.port' in arg:
-                    port = arg.split('=')[-1]
-                    return f"http://localhost:{port}"
-    # Default to 8501 if Streamlit isn't running or port isn't found
-    return "http://localhost:8501"
+    def display(self):
+        """Handles export options for CSV, PDF, and Screenshot"""
+        export_option = st.sidebar.selectbox("Select Export Option", ["CSV", "PDF", "Screenshot"], index=0)
 
-# Function to capture the entire screen as a screenshot
-def capture_screenshot(url=None, filename="streamlit_screenshot.png"):
-    if url is None:
-        url = get_streamlit_url()  # Get dynamic Streamlit URL if not provided
-    
-    # Set up Selenium to capture the screen
-    options = Options()
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    
-    try:
-        # Initialize the WebDriver
-        driver = webdriver.Chrome(options=options)
-        driver.set_page_load_timeout(180)  # Increased timeout to allow enough time for page load
+        if self.df is not None and not self.df.empty:
+            if export_option == "CSV":
+                self._export_csv()
+            elif export_option == "PDF":
+                self._export_pdf()
+            elif export_option == "Screenshot":
+                self._export_screenshot()
+        else:
+            st.warning("No data available for export.")
 
-        # Navigate to the Streamlit app URL
-        print(f"Opening URL: {url}")
-        driver.get(url)  # Use dynamic URL
-        time.sleep(5)  # Allow time for the page to load
-        
-        # Capture a screenshot
-        driver.save_screenshot(filename)
-        print(f"Screenshot saved as {filename}")
-        
-        # Optionally crop or process the image (using Pillow)
-        img = Image.open(filename)
-        img.save(filename)  # Save the screenshot
+    def _export_csv(self):
+        """Handles the CSV export."""
+        filename = save_as_csv(self.df, self.user_name, self.selected_month)
+        st.sidebar.download_button("Download CSV", open(filename, "rb").read(), filename)
 
-    except Exception as e:
-        print(f"Error capturing screenshot: {e}")
-    finally:
-        driver.quit()  # Ensure WebDriver is closed
+    def _export_pdf(self):
+        """Handles the PDF export."""
+        filename = save_as_pdf(self.df)
+        st.sidebar.download_button("Download PDF", open(filename, "rb").read(), filename)
 
-    return filename
-
-
-# Example usage
-if __name__ == "__main__":
-    # Capture screenshot of the Streamlit app
-    screenshot_path = capture_screenshot(filename="streamlit_screenshot.png")
-    print(f"Screenshot saved at: {screenshot_path}")
+    def _export_screenshot(self):
+        """Handles the screenshot export."""
+        screenshot_path = capture_screenshot(filename="streamlit_screenshot.png")
+        st.sidebar.download_button(
+            label="Download Screenshot",
+            data=open(screenshot_path, "rb").read(),
+            file_name="streamlit_screenshot.png"
+        )

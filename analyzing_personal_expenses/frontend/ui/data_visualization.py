@@ -25,13 +25,26 @@ class DataVisualization:
     def plot_monthly_expenses(self, df, selected_month="January", chart_type="pie"):
         """Create bar and pie charts for monthly expenses."""
         if df.empty:
-            print("No data available to plot monthly expenses.")
+            st.warning("No data available to plot monthly expenses.")
             return None
         
+        # Ensure date parsing and filtering by month is done correctly
         df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
         df['expense_month'] = df['expense_date'].dt.strftime('%B')
+
+        # Ensure amount_paid column exists
+        if 'amount_paid' not in df.columns:
+            st.error("The 'amount_paid' column is missing from the data.")
+            return None
+        
         filtered_df = df[df['expense_month'] == selected_month]
         filtered_df['amount_paid'] = pd.to_numeric(filtered_df['amount_paid'], errors='coerce')
+        
+        # Handle the case where all the 'amount_paid' values are NaN after coercion
+        if filtered_df['amount_paid'].isnull().all():
+            st.warning(f"No valid data for the selected month: {selected_month}")
+            return None
+        
         monthly_expenses = filtered_df.groupby('category_name')['amount_paid'].sum()
 
         if monthly_expenses.empty:
@@ -54,10 +67,21 @@ class DataVisualization:
     def plot_yearly_expenses(self, df, chart_type="pie"):
         """Create bar and pie charts for yearly expenses."""
         if df.empty:
-            print("No data available to plot yearly expenses.")
+            st.warning("No data available to plot yearly expenses.")
             return None
 
+        # Ensure amount_paid column exists
+        if 'amount_paid' not in df.columns:
+            st.error("The 'amount_paid' column is missing from the data.")
+            return None
+        
         df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+
+        # Handle the case where all the 'amount_paid' values are NaN after coercion
+        if df['amount_paid'].isnull().all():
+            st.warning("No valid data for yearly expenses.")
+            return None
+
         yearly_expenses = df.groupby('category_name')['amount_paid'].sum()
 
         if yearly_expenses.empty:
@@ -82,6 +106,11 @@ class DataVisualization:
         if df.empty:
             return pd.DataFrame(columns=['category_name', 'amount_paid'])
         
+        # Ensure amount_paid column exists
+        if 'amount_paid' not in df.columns:
+            st.error("The 'amount_paid' column is missing from the data.")
+            return pd.DataFrame()
+
         df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
         return df.groupby('category_name')['amount_paid'].sum().nlargest(10).reset_index()
 
@@ -96,7 +125,13 @@ class DataVisualization:
             }
         
         if 'amount_paid' not in df.columns:
-            raise KeyError("The 'amount_paid' column is missing in the data.")
+            st.error("The 'amount_paid' column is missing from the data.")
+            return {
+                "max_category": "No data available",
+                "max_amount": "No data available",
+                "min_category": "No data available",
+                "min_amount": "No data available"
+            }
         
         grouped = df.groupby('category_name')['amount_paid'].sum()
         

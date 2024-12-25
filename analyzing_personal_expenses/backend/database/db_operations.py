@@ -38,7 +38,6 @@ class DatabaseOperations:
 
         return pd.DataFrame(data, columns=['expense_date', 'category_name', 'amount_paid'])
 
-    # Fetch users from the 'users' table
     def fetch_users(self):
         query = "SELECT user_id, user_name FROM users WHERE role = 'user'"  # Only fetch users
         conn = self.get_db_connection()
