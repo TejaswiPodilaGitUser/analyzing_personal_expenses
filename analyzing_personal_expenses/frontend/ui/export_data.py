@@ -2,7 +2,6 @@ import pandas as pd
 import streamlit as st
 from utils.plot_utils import save_as_csv, save_as_pdf
 import os
-
 class ExportData:
     def __init__(self, df, selected_month, user_name):
         self.df = df
@@ -29,12 +28,3 @@ class ExportData:
                 st.sidebar.download_button("Download CSV", file.read(), file_name=filename)
         except Exception as e:
             st.error(f"Failed to export CSV: {e}")
-
-    def export_pdf(self):
-        """Handles the PDF export."""
-        try:
-            filename = save_as_pdf(self.df)
-            with open(filename, "rb") as file:
-                st.sidebar.download_button("Download PDF", file.read(), file_name=filename)
-        except Exception as e:
-            st.error(f"Failed to export PDF: {e}")

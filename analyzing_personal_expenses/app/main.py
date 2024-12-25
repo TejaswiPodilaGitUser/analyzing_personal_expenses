@@ -25,6 +25,7 @@ def main():
 
     # Sidebar: User and Filter Selections
     user_id, visualization_type, chart_type, selected_month = sidebar.display_sidebar(users)
+    print(f"In main.py User ID: {user_id},  Selected Month: {selected_month}")
 
     # Fetch User Data
     dv = DataVisualization(user_id=user_id)
@@ -87,9 +88,17 @@ def main():
             unsafe_allow_html=True
         )
 
-    # Export Options
+    # In main.py
+    # Inside your main function, ensure that user_id and selected_month are passed correctly:
+    #print user_id and selected_month
+    print(f"In main.py User ID: {user_id},  Selected Month: {selected_month}")
+    
+    print(f"In main.py Exporting Data for user: {users.get(user_id, 'All Users')} and month: {selected_month}")
+
+    # Ensure the user_id and selected_month are passed correctly when initializing ExportData
     export_handler = ExportData(top_10_df, selected_month, users.get(user_id, "All Users"))
     export_handler.display()
+
 
 
 if __name__ == "__main__":

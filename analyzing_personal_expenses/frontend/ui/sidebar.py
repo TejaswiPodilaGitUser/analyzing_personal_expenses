@@ -44,4 +44,8 @@ def display_sidebar(users):
             index=0
         )
 
+    # If no month is selected, default to 'January' for monthly visualization
+    if visualization_type == "Monthly" and selected_month is None:
+        selected_month = "January"
+
     return user_id, visualization_type, chart_type, selected_month

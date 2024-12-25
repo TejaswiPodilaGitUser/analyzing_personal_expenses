@@ -4,9 +4,18 @@ from fpdf import FPDF
 
 def save_as_csv(df, user_name, selected_month):
     """Save data to CSV."""
-    filename = f"{user_name}_{selected_month}_top_10_expenses.csv"
+    # Debugging statement
+    print(f"In Plot_utils . Saving data to CSV for user: {user_name} and month: {selected_month}")
+    
+    # Handle different cases for filename generation
+    if user_name == "All Users" and selected_month is None:
+        filename = "All_Users_top_10_Annual_expenses.csv"
+    else:
+        filename = f"{user_name}_{selected_month}_top_10_expenses.csv"
+    
     df.to_csv(filename, index=False)
     return filename
+
 
 
 def save_as_pdf(df):

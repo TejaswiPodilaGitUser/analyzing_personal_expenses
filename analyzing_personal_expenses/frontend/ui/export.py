@@ -39,9 +39,3 @@ def save_as_csv(df):
     path = f"/tmp/expenses.csv"
     df.to_csv(path, index=False)
     return path
-
-def capture_screenshot(filename="screenshot.png"):
-    """Capture a screenshot and save it."""
-    screenshot_path = f"/tmp/{filename}"
-    st.screenshot(screenshot_path)
-    return screenshot_path

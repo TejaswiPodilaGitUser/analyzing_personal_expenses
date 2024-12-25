@@ -28,17 +28,19 @@ class DataVisualization:
             st.warning("No data available to plot monthly expenses.")
             return None
         
+        # Ensure necessary columns are present and valid
+        if 'amount_paid' not in df.columns or 'expense_date' not in df.columns:
+            st.error("Missing required columns.")
+            return None
+
         df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
+        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
         df['expense_month'] = df['expense_date'].dt.strftime('%B')
 
-        if 'amount_paid' not in df.columns:
-            st.error("The 'amount_paid' column is missing from the data.")
-            return None
-        
+        # Filter data for selected month
         filtered_df = df[df['expense_month'] == selected_month]
-        filtered_df['amount_paid'] = pd.to_numeric(filtered_df['amount_paid'], errors='coerce')
-        
-        if filtered_df['amount_paid'].isnull().all():
+
+        if filtered_df.empty:
             st.warning(f"No valid data for the selected month: {selected_month}")
             return None
         
@@ -48,9 +50,10 @@ class DataVisualization:
             st.warning(f"No data available for the selected month: {selected_month}")
             return None
 
-        # Add heading dynamically based on chart type
+        # Dynamically set the report title
         st.markdown(f"### 📅 Monthly Expenses Overview: {selected_month}")
 
+        # Plot the chart
         if chart_type.lower() == "bar":
             plot_bar_chart(
                 monthly_expenses,
@@ -63,9 +66,15 @@ class DataVisualization:
                 monthly_expenses,
                 title=f"Spending Categories - {selected_month}"
             )
-        
-        # Set the title for CSV download
-        report_title = f"User {self.user_id} - {selected_month} Top 10 Expenses"
+
+        # Enable CSV download
+        # Print user_id and selected_month
+        print(f"In Data_visualization: User ID: {self.user_id}, Selected Month: {selected_month}")
+        #if self.user_id is not None: Use All USers Top 10 Expenses
+        if self.user_id is None:
+            report_title = f"All Users Top 10 Expenses for {selected_month}"
+        else:
+            report_title = f"User {self.user_id} - {selected_month} Top 10 Expenses"
         self.download_csv(filtered_df, report_title)
 
     def plot_yearly_expenses(self, df, chart_type="pie"):
@@ -74,6 +83,7 @@ class DataVisualization:
             st.warning("No data available to plot yearly expenses.")
             return None
 
+        # Ensure necessary columns are present and valid
         if 'amount_paid' not in df.columns:
             st.error("The 'amount_paid' column is missing from the data.")
             return None
@@ -90,9 +100,10 @@ class DataVisualization:
             st.warning("No data available for yearly expenses.")
             return None
 
-        # Add heading dynamically based on chart type
+        # Dynamically set the report title
         st.markdown("### 📅 Yearly Expenses Overview")
 
+        # Plot the chart
         if chart_type.lower() == "bar":
             plot_bar_chart(
                 yearly_expenses,
@@ -105,8 +116,8 @@ class DataVisualization:
                 yearly_expenses,
                 title="Yearly Expenses Overview"
             )
-        
-        # Set the title for CSV download
+
+        # Enable CSV download
         report_title = "All Users Top 10 Expenses"
         self.download_csv(df, report_title)
 
@@ -117,14 +128,8 @@ class DataVisualization:
         
         # Format the file name without underscores
         formatted_report_title = report_title.replace("_", " ")
-
-        # Add CSV download button
-        st.download_button(
-            label="Download CSV",
-            data=csv_data,
-            file_name=f"{formatted_report_title}.csv",
-            mime="text/csv"
-        )
+        print(f"In Data_visualization: Formatted report title: {formatted_report_title}")
+        
 
     def get_top_spending_categories(self, df):
         """Get the top 10 spending categories."""
