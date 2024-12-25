@@ -14,7 +14,7 @@ def plot_pie_chart(data, title, chart_size=(6, 6)):
     )
     
     ax.set_ylabel('')  # Remove the y-axis label for a cleaner look
-    #ax.set_title(title, fontweight='bold')  # Add title with bold formatting
+   # ax.set_title(title, fontweight='bold')  # Add title with bold formatting
     
     plt.tight_layout()
     st.pyplot(fig)

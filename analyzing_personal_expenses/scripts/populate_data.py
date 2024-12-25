@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 import mysql.connector
 from faker import Faker
-from populate_expenses import populate_expenses  # Import the extracted function
-from static_data import CATEGORIES, PAYMENT_MODES, CATEGORY_DESCRIPTIONS  # Import static data
+from populate_expenses import populate_expenses
+from static_data import CATEGORIES, PAYMENT_MODES, CATEGORY_DESCRIPTIONS
+from users_population import populate_users  # Moved populate_users here
 
 # Load environment variables from .env
 load_dotenv()
@@ -20,29 +21,6 @@ fake = Faker()
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
-
-def populate_users():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    users = [
-        ("admin", "admin@example.com", "admin_password", "admin"),
-        ("user1", "user1@example.com", "user_password", "user"),
-        ("user2", "user2@example.com", "user_password", "user"),
-        ("user3", "user3@example.com", "user_password", "user"),
-        ("user4", "user4@example.com", "user_password", "user")
-    ]
-    
-    cursor.executemany(
-        """INSERT INTO users (user_name, user_email, password, role)
-           VALUES (%s, %s, %s, %s)""",
-        users
-    )
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"✅ 5 Users added successfully!")
 
 def populate_categories_and_subcategories():
     conn = get_db_connection()
@@ -91,7 +69,7 @@ def populate_payment_modes():
 
 def main():
     print("🚀 Starting Database Population...")
-    populate_users()
+    populate_users(get_db_connection)
     populate_categories_and_subcategories()
     populate_payment_modes()
     populate_expenses(50)

@@ -1,29 +1,47 @@
 import streamlit as st
+from static_expense_data import MONTHS
 
-def display_sidebar():
-    # Sidebar Selections with Defaults
+def display_sidebar(users):
+    """
+    Display the sidebar with user filters and return selected values.
+
+    Args:
+        users (dict): Dictionary of user names and IDs fetched from the database.
+
+    Returns:
+        tuple: user_id, visualization_type, chart_type, selected_month
+    """
     st.sidebar.title("Choose Filters")
 
-    # Default User Selection
-    user_id = st.sidebar.selectbox(
+    # User Selection
+    user_name = st.sidebar.selectbox(
         "Select User", 
-        ["All Users", "User 1", "User 2", "Admin"], 
+        ["All Users"] + list(users.keys()),  
         index=0
     )
-    user_map = {"All Users": None, "User 1": 1, "User 2": 2, "Admin": 3}
+    user_id = None if user_name == "All Users" else users[user_name]
 
-    # Default Visualization Type
-    visualization_type = st.sidebar.selectbox(
-        "Select Visualization Type", 
+    # Visualization Type (Radio Button)
+    visualization_type = st.sidebar.radio(
+        "Analysis Period", 
         ["Yearly", "Monthly"], 
         index=0
     )
 
-    # Default Chart Type
+    # Chart Type
     chart_type = st.sidebar.selectbox(
-        "Select Chart Type", 
+        "Chart Type", 
         ["Pie", "Bar"], 
         index=0
     )
 
-    return user_map[user_id], visualization_type, chart_type
+    # Month Selection (if Monthly visualization)
+    selected_month = None
+    if visualization_type == "Monthly":
+        selected_month = st.sidebar.selectbox(
+            "Select Month", 
+            MONTHS,
+            index=0
+        )
+
+    return user_id, visualization_type, chart_type, selected_month

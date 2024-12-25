@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
 from backend.database.db_operations import DatabaseOperations
-
+from io import StringIO
 
 class DataVisualization:
     def __init__(self, user_id=None):
@@ -28,11 +28,9 @@ class DataVisualization:
             st.warning("No data available to plot monthly expenses.")
             return None
         
-        # Ensure date parsing and filtering by month is done correctly
         df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
         df['expense_month'] = df['expense_date'].dt.strftime('%B')
 
-        # Ensure amount_paid column exists
         if 'amount_paid' not in df.columns:
             st.error("The 'amount_paid' column is missing from the data.")
             return None
@@ -40,7 +38,6 @@ class DataVisualization:
         filtered_df = df[df['expense_month'] == selected_month]
         filtered_df['amount_paid'] = pd.to_numeric(filtered_df['amount_paid'], errors='coerce')
         
-        # Handle the case where all the 'amount_paid' values are NaN after coercion
         if filtered_df['amount_paid'].isnull().all():
             st.warning(f"No valid data for the selected month: {selected_month}")
             return None
@@ -51,33 +48,38 @@ class DataVisualization:
             st.warning(f"No data available for the selected month: {selected_month}")
             return None
 
+        # Add heading dynamically based on chart type
+        st.markdown(f"### 📅 Monthly Expenses Overview: {selected_month}")
+
         if chart_type.lower() == "bar":
             plot_bar_chart(
                 monthly_expenses,
                 xlabel="Category",
                 ylabel="Amount Paid",
-                title=f"Top Spending Categories - {selected_month}"
+                title=f"Spending Categories - {selected_month}"
             )
         elif chart_type.lower() == "pie":
             plot_pie_chart(
                 monthly_expenses,
-                title=f"Top Spending Categories - {selected_month}"
+                title=f"Spending Categories - {selected_month}"
             )
-    
+        
+        # Set the title for CSV download
+        report_title = f"User {self.user_id} - {selected_month} Top 10 Expenses"
+        self.download_csv(filtered_df, report_title)
+
     def plot_yearly_expenses(self, df, chart_type="pie"):
         """Create bar and pie charts for yearly expenses."""
         if df.empty:
             st.warning("No data available to plot yearly expenses.")
             return None
 
-        # Ensure amount_paid column exists
         if 'amount_paid' not in df.columns:
             st.error("The 'amount_paid' column is missing from the data.")
             return None
         
         df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
 
-        # Handle the case where all the 'amount_paid' values are NaN after coercion
         if df['amount_paid'].isnull().all():
             st.warning("No valid data for yearly expenses.")
             return None
@@ -87,6 +89,9 @@ class DataVisualization:
         if yearly_expenses.empty:
             st.warning("No data available for yearly expenses.")
             return None
+
+        # Add heading dynamically based on chart type
+        st.markdown("### 📅 Yearly Expenses Overview")
 
         if chart_type.lower() == "bar":
             plot_bar_chart(
@@ -98,15 +103,34 @@ class DataVisualization:
         elif chart_type.lower() == "pie":
             plot_pie_chart(
                 yearly_expenses,
-                title="Yearly Expenses Breakdown"
+                title="Yearly Expenses Overview"
             )
+        
+        # Set the title for CSV download
+        report_title = "All Users Top 10 Expenses"
+        self.download_csv(df, report_title)
+
+    def download_csv(self, df, report_title):
+        """Generate and provide a download button for the CSV."""
+        # Prepare CSV content
+        csv_data = df.to_csv(index=False)
+        
+        # Format the file name without underscores
+        formatted_report_title = report_title.replace("_", " ")
+
+        # Add CSV download button
+        st.download_button(
+            label="Download CSV",
+            data=csv_data,
+            file_name=f"{formatted_report_title}.csv",
+            mime="text/csv"
+        )
 
     def get_top_spending_categories(self, df):
         """Get the top 10 spending categories."""
         if df.empty:
             return pd.DataFrame(columns=['category_name', 'amount_paid'])
         
-        # Ensure amount_paid column exists
         if 'amount_paid' not in df.columns:
             st.error("The 'amount_paid' column is missing from the data.")
             return pd.DataFrame()
