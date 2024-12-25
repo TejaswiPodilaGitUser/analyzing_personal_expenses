@@ -11,7 +11,7 @@ from frontend.ui.export_data import ExportData
 from backend.database.db_operations import DatabaseOperations
 from static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
-from backend.analytics.data_insights import generate_insights
+from frontend.ui.data_insights import get_insights
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
                     st.dataframe(top_10_df)
                 with col2:
                     dv.plot_monthly_expenses(filtered_df, selected_month, chart_type)
-                insights = generate_insights(filtered_df)
+                insights = get_insights(filtered_df)
 
         # Handle Yearly Visualization
         elif visualization_type == "Yearly":
@@ -61,7 +61,7 @@ def main():
                 st.dataframe(top_10_df)
             with col2:
                 dv.plot_yearly_expenses(df, chart_type)
-            insights = generate_insights(df)
+            insights = get_insights(df)
 
     # Display Insights
     st.markdown("---")

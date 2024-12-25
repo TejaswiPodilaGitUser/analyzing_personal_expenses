@@ -1,12 +1,18 @@
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
+import sys
+import os
+
+# Add the parent directory to the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
 from frontend.ui.scatter_chart import plot_scatter_chart
 from backend.database.db_operations import DatabaseOperations
 from io import StringIO
-from frontend.ui.insights import get_insights  # Importing the new insights function
+from frontend.ui.data_insights import get_insights  # Importing the new insights function
 
 class DataVisualization:
     def __init__(self, user_id=None):
