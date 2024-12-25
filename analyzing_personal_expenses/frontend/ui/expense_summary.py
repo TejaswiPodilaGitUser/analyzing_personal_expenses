@@ -1,5 +1,5 @@
 import streamlit as st
-from static_expense_data import MESSAGES
+from analyzing_personal_expenses.utils.static_expense_data import MESSAGES
 
 
 class ExpenseSummary:

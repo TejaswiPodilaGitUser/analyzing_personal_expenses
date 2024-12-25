@@ -1,5 +1,5 @@
 import streamlit as st
-from static_expense_data import MONTHS
+from utils.static_expense_data import MONTHS
 
 def display_sidebar(users):
     """

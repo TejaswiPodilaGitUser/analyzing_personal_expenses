@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from frontend.ui.data_visualization import DataVisualization
 from frontend.ui.export_data import ExportData
 from backend.database.db_operations import DatabaseOperations
-from static_expense_data import MONTHS, MESSAGES
+from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
 from frontend.ui.data_insights import get_insights
 
