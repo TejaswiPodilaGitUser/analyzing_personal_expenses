@@ -18,7 +18,7 @@ def save_as_csv(df, user_name, selected_month):
     
     # Save the DataFrame to CSV
     df.to_csv(filename, index=False)
-    print(f"CSV file saved as: {filename}")
+    #print(f"CSV file saved as: {filename}")
     return filename
 
 
@@ -57,7 +57,7 @@ def save_as_pdf(df, user_name, selected_month=None):
 
         # Output PDF with the dynamically generated filename
         pdf.output(filename)
-        print(f"PDF file saved as: {filename}")
+       # print(f"PDF file saved as: {filename}")
         return filename
     except Exception as e:
         print(f"Error generating PDF: {e}")

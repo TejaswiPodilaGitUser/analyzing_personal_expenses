@@ -6,6 +6,7 @@ from frontend.ui.pie_chart import plot_pie_chart
 from frontend.ui.scatter_chart import plot_scatter_chart
 from backend.database.db_operations import DatabaseOperations
 from io import StringIO
+from frontend.ui.insights import get_insights  # Importing the new insights function
 
 class DataVisualization:
     def __init__(self, user_id=None):
@@ -144,45 +145,9 @@ class DataVisualization:
         df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
         return df.groupby('category_name')['amount_paid'].sum().nlargest(10).reset_index()
 
-    def get_insights(self, df):
-        """Get insights such as max and min spending categories."""
-        if df.empty:
-            return {
-                "max_category": "No data available",
-                "max_amount": "No data available",
-                "min_category": "No data available",
-                "min_amount": "No data available"
-            }
-        
-        if 'amount_paid' not in df.columns:
-            st.error("The 'amount_paid' column is missing from the data.")
-            return {
-                "max_category": "No data available",
-                "max_amount": "No data available",
-                "min_category": "No data available",
-                "min_amount": "No data available"
-            }
-        
-        grouped = df.groupby('category_name')['amount_paid'].sum()
-        
-        if grouped.empty:
-            return {
-                "max_category": "No data available",
-                "max_amount": "No data available",
-                "min_category": "No data available",
-                "min_amount": "No data available"
-            }
-
-        return {
-            "max_category": grouped.idxmax(),
-            "max_amount": grouped.max(),
-            "min_category": grouped.idxmin(),
-            "min_amount": grouped.min()
-        }
-
     def display_expense_summary(self, df):
         """Display expense summary insights."""
-        insights = self.get_insights(df)
+        insights = get_insights(df)  # Using the refactored insights method
 
         st.write("### 📊 Expense Summary: Key Spending Insights")
         if insights['max_category'] == "No data available":
