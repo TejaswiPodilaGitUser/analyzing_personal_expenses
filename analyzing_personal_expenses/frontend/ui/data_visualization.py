@@ -68,13 +68,7 @@ class DataVisualization:
             )
 
         # Enable CSV download
-        # Print user_id and selected_month
-        print(f"In Data_visualization: User ID: {self.user_id}, Selected Month: {selected_month}")
-        #if self.user_id is not None: Use All USers Top 10 Expenses
-        if self.user_id is None:
-            report_title = f"All Users Top 10 Expenses for {selected_month}"
-        else:
-            report_title = f"User {self.user_id} - {selected_month} Top 10 Expenses"
+        report_title = f"Top 10 Expenses for {selected_month}"
         self.download_csv(filtered_df, report_title)
 
     def plot_yearly_expenses(self, df, chart_type="pie"):
@@ -117,18 +111,18 @@ class DataVisualization:
                 title="Yearly Expenses Overview"
             )
 
-        # Enable CSV download
-        report_title = "All Users Top 10 Expenses"
+        report_title = "Top 10 Annual Expenses"   
         self.download_csv(df, report_title)
 
     def download_csv(self, df, report_title):
         """Generate and provide a download button for the CSV."""
+        if df.empty:
+            st.warning("No data available to download as CSV.")
+            return
+        
         # Prepare CSV content
         csv_data = df.to_csv(index=False)
-        
-        # Format the file name without underscores
-        formatted_report_title = report_title.replace("_", " ")
-        print(f"In Data_visualization: Formatted report title: {formatted_report_title}")
+
         
 
     def get_top_spending_categories(self, df):

@@ -88,18 +88,10 @@ def main():
             unsafe_allow_html=True
         )
 
-    # In main.py
-    # Inside your main function, ensure that user_id and selected_month are passed correctly:
-    #print user_id and selected_month
-    print(f"In main.py User ID: {user_id},  Selected Month: {selected_month}")
-    
-    print(f"In main.py Exporting Data for user: {users.get(user_id, 'All Users')} and month: {selected_month}")
-
+    user_name = next((name for name, id in users.items() if id == user_id), "All Users")
     # Ensure the user_id and selected_month are passed correctly when initializing ExportData
-    export_handler = ExportData(top_10_df, selected_month, users.get(user_id, "All Users"))
+    export_handler = ExportData(top_10_df, selected_month, user_name)
     export_handler.display()
-
-
 
 if __name__ == "__main__":
     main()
