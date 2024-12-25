@@ -28,3 +28,11 @@ class ExportData:
                 st.sidebar.download_button("Download CSV", file.read(), file_name=filename)
         except Exception as e:
             st.error(f"Failed to export CSV: {e}")
+
+    def export_pdf(self):
+        try:
+            filename = save_as_pdf(self.df)
+            with open(filename, "rb") as file:
+                st.sidebar.download_button("Download PDF", file.read(), file_name=filename)
+        except Exception as e:
+            st.error(f"Failed to export PDF: {e}")

@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import streamlit as st
 
-def plot_pie_chart(data, title, chart_size=(6, 6)):
+
+def plot_pie_chart(data, title, chart_size=(6, 4)):
     """Plot a pie chart with proper sizing and title."""
     fig, ax = plt.subplots(figsize=chart_size)  # Explicit figsize for consistency
     
