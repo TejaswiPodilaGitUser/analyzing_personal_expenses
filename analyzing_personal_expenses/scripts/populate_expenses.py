@@ -54,9 +54,9 @@ def populate_expenses(n=50):
         
         cursor.execute(
             """INSERT INTO expenses 
-               (user_id, category_id, subcategory_id, amount_paid, expense_date, description, payment_mode_id)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (user_id, category_id, subcategory_id, amount_paid, expense_date, description, payment_mode_id)
+            (user_id, category_id, subcategory_id, amount_paid, expense_date, payment_mode_id)
+            VALUES (%s, %s, %s, %s, %s, %s)""",
+            (user_id, category_id, subcategory_id, amount_paid, expense_date, payment_mode_id)
         )
     
     conn.commit()

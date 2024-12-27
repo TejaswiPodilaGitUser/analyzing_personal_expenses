@@ -66,28 +66,23 @@ CREATE TABLE payment_modes (
 );
 
 -- Expenses Table: Stores records of individual expenses made by users
--- Amount_paid can be NULL to allow for blank/invalid data
--- User_id can be NULL to allow for expenses without a user
--- on DELETE SET NULL is used to set user_id to NULL when a user is deleted
--- Subcategory_id can be NULL to allow for expenses without a subcategory
 -- Expenses Table: Stores records of individual expenses made by users
 CREATE TABLE expenses (
     expense_id INT AUTO_INCREMENT PRIMARY KEY,           -- Auto-incremented expense ID
-    user_id INT NULL,                                     -- Can be NULL
-    category_id INT NOT NULL,                             -- Cannot be NULL
-    subcategory_id INT NULL,                              -- Can be NULL
-    amount_paid DECIMAL(10,2) NULL,                       -- Can be NULL
-    expense_date DATE NOT NULL,                           -- Cannot be NULL
-    payment_mode_id INT NOT NULL,                         -- Cannot be NULL
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    -- Date of creation
+    user_id INT NULL,                                    -- Foreign key referencing user_id (can be NULL)
+    category_id INT NOT NULL,                            -- Foreign key referencing category_id
+    subcategory_id INT NOT NULL,                         -- Foreign key referencing subcategory_id
+    amount_paid DECIMAL(10,2) NULL,                      -- Amount paid in the expense (can be NULL)
+    expense_date DATE NOT NULL,                          -- Date of the expense
+    payment_mode_id INT NOT NULL,                        -- Foreign key referencing payment_id
+    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   -- Date of creation
     updation_date TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,  -- Date of last update
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (subcategory_id) REFERENCES subcategories(subcategory_id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (payment_mode_id) REFERENCES payment_modes(payment_mode_id) ON DELETE CASCADE ON UPDATE CASCADE
-) AUTO_INCREMENT = 10000;
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE,  -- Foreign key constraint for user_id
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Foreign key constraint for category_id
+    FOREIGN KEY (subcategory_id) REFERENCES subcategories(subcategory_id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Foreign key constraint for subcategory_id
+    FOREIGN KEY (payment_mode_id) REFERENCES payment_modes(payment_mode_id) ON DELETE CASCADE ON UPDATE CASCADE -- Foreign key constraint for payment_id
+) AUTO_INCREMENT = 10000;  -- Starts expense IDs from 10000
 """
-
 
 # Function to create the tables in the database
 # This function will execute the SQL commands to create the necessary tables
