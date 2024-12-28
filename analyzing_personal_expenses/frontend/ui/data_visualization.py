@@ -1,163 +1,73 @@
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
-import sys
-import os
-
-# Add the parent directory to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from frontend.ui.bar_chart import plot_bar_chart
-from frontend.ui.pie_chart import plot_pie_chart
-from frontend.ui.scatter_chart import plot_scatter_chart
+from frontend.ui.plot_monthly_expenses import PlotMonthlyExpenses
+from frontend.ui.plot_yearly_expenses import PlotYearlyExpenses
+from frontend.ui.plot_subcategory_expenses import PlotSubcategoryExpenses
+from frontend.ui.plot_data_insights import PlotDataInsights
 from backend.database.db_operations import DatabaseOperations
-from io import StringIO
-from frontend.ui.data_insights import get_insights  # Importing the new insights function
+from frontend.ui.horizontal_bar_chart import plot_horizontal_bar_chart
 
 class DataVisualization:
     def __init__(self, user_id=None):
         self.user_id = user_id
         self.db_ops = DatabaseOperations()
+        self.plot_monthly = PlotMonthlyExpenses()
+        self.plot_yearly = PlotYearlyExpenses()
+        self.plot_subcategory = PlotSubcategoryExpenses(user_id=self.user_id)
+        self.plot_insights = PlotDataInsights()
 
-    def get_user_expenses(self):
-        """Fetch user expenses from the database."""
+    def get_user_expenses(self, selected_year=None, selected_month=None):
+        """Fetch user expenses from the database filtered by year and month."""
         try:
-            df = self.db_ops.fetch_user_expenses(self.user_id)
+            df = self.db_ops.fetch_user_expenses(self.user_id, selected_year, selected_month)
+
             if df.empty:
-                raise ValueError("No expenses found for the selected user.")
+                raise ValueError("No expenses found for the selected user and period.")
             return df
         except Exception as e:
             print(f"Error fetching expenses: {e}")
             return pd.DataFrame()
-
-    def plot_monthly_expenses(self, df, selected_month="January", chart_type="pie"):
-        """Create bar and pie charts for monthly expenses."""
-        if df.empty:
-            st.warning("No data available to plot monthly expenses.")
-            return None
         
-        # Ensure necessary columns are present and valid
-        if 'amount_paid' not in df.columns or 'expense_date' not in df.columns:
-            st.error("Missing required columns.")
-            return None
 
-        df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
-        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-        df['expense_month'] = df['expense_date'].dt.strftime('%B')
-
-        # Filter data for selected month
-        filtered_df = df[df['expense_month'] == selected_month]
-
-        if filtered_df.empty:
-            st.warning(f"No valid data for the selected month: {selected_month}")
-            return None
-        
-        monthly_expenses = filtered_df.groupby('category_name')['amount_paid'].sum()
-
-        if monthly_expenses.empty:
-            st.warning(f"No data available for the selected month: {selected_month}")
-            return None
-
-        # Dynamically set the report title
-        st.markdown(f"### 📅 Monthly Expenses Overview: {selected_month}")
-
-        # Plot the chart
-        if chart_type.lower() == "bar":
-            plot_bar_chart(
-                monthly_expenses,
-                xlabel="Category",
-                ylabel="Amount Paid",
-                title=f"Spending Categories - {selected_month}"
-            )
-        elif chart_type.lower() == "pie":
-            plot_pie_chart(monthly_expenses, title=f"Spending Categories - {selected_month}", chart_size=(6, 4))
-
-        elif chart_type.lower() == "scatter":
-            # Use the updated plot_scatter_chart function
-            fig = plot_scatter_chart(filtered_df, x='category_name', y='amount_paid', title=f"Expense Scatter Plot - {selected_month}")
-            if fig:
-                st.pyplot(fig)
-
-        # Enable CSV download
-        report_title = f"Top 10 Expenses for {selected_month}"
-        self.download_csv(filtered_df, report_title)
-
-    def plot_yearly_expenses(self, df, chart_type="pie"):
-        """Create bar and pie charts for yearly expenses."""
-        if df.empty:
-            st.warning("No data available to plot yearly expenses.")
-            return None
-
-        # Ensure necessary columns are present and valid
-        if 'amount_paid' not in df.columns:
-            st.error("The 'amount_paid' column is missing from the data.")
-            return None
-        
-        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-
-        if df['amount_paid'].isnull().all():
-            st.warning("No valid data for yearly expenses.")
-            return None
-
-        yearly_expenses = df.groupby('category_name')['amount_paid'].sum()
-
-        if yearly_expenses.empty:
-            st.warning("No data available for yearly expenses.")
-            return None
-
-        # Dynamically set the report title
-        st.markdown("### 📅 Yearly Expenses Overview")
-
-        # Plot the chart
-        if chart_type.lower() == "bar":
-            plot_bar_chart(
-                yearly_expenses,
-                xlabel="Category",
-                ylabel="Amount Paid",
-                title="Yearly Expenses Overview"
-            )
-        elif chart_type.lower() == "pie":
-            plot_pie_chart(yearly_expenses, title="Yearly Expenses Overview", chart_size=(6, 4))
-
-        elif chart_type.lower() == "scatter":
-            # Use the updated plot_scatter_chart function
-            fig = plot_scatter_chart(df, x='category_name', y='amount_paid', title="Yearly Expense Scatter Plot")
-            if fig:
-                st.pyplot(fig)
+    def display_monthly_expenses(self, df, selected_year=None, selected_month=None, chart_type="pie"):
+        """Display monthly expenses chart filtered by year and month."""
+        # Ensure the month parameter is numeric and properly passed
+        self.plot_monthly.plot(df, selected_year=selected_year, selected_month=selected_month, chart_type=chart_type)
 
 
-        report_title = "Top 10 Annual Expenses"   
-        self.download_csv(df, report_title)
+    def display_yearly_expenses(self, df, selected_year="2025", chart_type="pie"):
+        """Display yearly expenses chart."""
+        self.plot_yearly.plot(df, selected_year=selected_year, chart_type=chart_type)
 
-    def download_csv(self, df, report_title):
-        """Generate and provide a download button for the CSV."""
-        if df.empty:
-            st.warning("No data available to download as CSV.")
-            return
+    def display_data_insights(self, df):
+        """Display data insights."""
+        self.plot_insights.display(df)
 
-        # Prepare CSV content
-        csv_data = df.to_csv(index=False)
-
-
-    def get_top_spending_categories(self, df):
-        """Get the top 10 spending categories."""
+    def get_top_spending_categories(self, df, selected_year=None, selected_month=None):
+        """Get the top 10 spending categories filtered by year and month."""
         if df.empty:
             return pd.DataFrame(columns=['category_name', 'amount_paid'])
-        
-        if 'amount_paid' not in df.columns:
-            st.error("The 'amount_paid' column is missing from the data.")
+
+        # Ensure 'amount_paid' is numeric, coercing errors to NaN
+        df.loc[:, 'amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+
+        # Drop rows where 'amount_paid' is NaN
+        df = df.dropna(subset=['amount_paid'])
+
+        # Check if the 'amount_paid' column is numeric
+        if df['amount_paid'].dtype not in ['float64', 'int64']:
+            st.error("The 'amount_paid' column is not numeric. Please check the data.")
             return pd.DataFrame()
 
-        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-        return df.groupby('category_name')['amount_paid'].sum().nlargest(10).reset_index()
+        # If both selected year and month are provided, filter data for that period
+        if selected_year and selected_month:
+            df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
+            df['expense_year'] = df['expense_date'].dt.year
+            df['expense_month'] = df['expense_date'].dt.strftime('%B')
 
-    def display_expense_summary(self, df):
-        """Display expense summary insights."""
-        insights = get_insights(df)  # Using the refactored insights method
-
-        st.write("### 📊 Expense Summary: Key Spending Insights")
-        if insights['max_category'] == "No data available":
-            st.warning("No data available for insights.")
+            filtered_df = df[(df['expense_year'] == selected_year) & (df['expense_month'].str.lower() == selected_month.lower())]
         else:
-            st.write(f"▲ **Max Spending:** {insights['max_category']} (${insights['max_amount']:.2f})")
-            st.write(f"▼ **Min Spending:** {insights['min_category']} (${insights['min_amount']:.2f})")
+            filtered_df = df
+
+        # Return the top 10 categories by total 'amount_paid'
+        return filtered_df.groupby('category_name')['amount_paid'].sum().nlargest(10).reset_index()

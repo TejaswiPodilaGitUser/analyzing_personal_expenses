@@ -45,7 +45,8 @@ def populate_expenses_with_blanks(n=50):
         # Ensure mandatory fields are always populated
         category_id = random.choice(category_ids)
         payment_mode_id = random.choice(payment_mode_ids)
-        expense_date = fake.date_this_year()
+        # Use years fake date range 2020-2026
+        expense_date = fake.date_between(start_date='-5y', end_date='now')
         
         try:
             cursor.execute(
