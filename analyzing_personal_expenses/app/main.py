@@ -12,7 +12,6 @@ from backend.database.db_operations import DatabaseOperations
 from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
 from frontend.ui.data_insights import get_insights
-
 def main():
     """Main function to run the Expense Tracker Streamlit App."""
     st.set_page_config(layout="wide")
@@ -39,6 +38,9 @@ def main():
     df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
     df['expense_year'] = df['expense_date'].dt.year
     df['expense_month'] = df['expense_date'].dt.strftime('%B')
+
+    # Initialize subcategory_df as an empty DataFrame
+    subcategory_df = pd.DataFrame()
 
     # Monthly Visualization
     if visualization_type == "Monthly":
@@ -91,30 +93,51 @@ def main():
             insights = get_insights(filtered_df, selected_year)
 
     # Sub Category Bar chart if a category is selected
+    # Subcategory Visualization
+    # Subcategory Visualization for selected category from dropdown
     if detailed_view_category:
-        subcategory_df = dv.get_user_expenses_by_subcategory(
-            selected_year=selected_year, 
-            selected_month=selected_month, 
-            category=detailed_view_category
-        )
+        print("In main.py- detailed_view_category ", detailed_view_category)
+        print("In main.py- top_10_df ", top_10_df)
 
-        if not subcategory_df.empty:
-            st.markdown(f"### 📊 Subcategory Expenses Overview for {detailed_view_category}")
+        # Create a dropdown to select a category from all available categories
+        available_categories = top_10_df['category_name'].unique().tolist()  # Or fetch from all categories
+        
+        # If detailed_view_category is not set, default to "All Categories"
+        selected_category = detailed_view_category if detailed_view_category else "All Categories"
 
-            # Create two columns to adjust layout
-            col1, col2 = st.columns([1, 1])  # Left column (empty space) and right column (for chart)
-            
-            with col1:
-                # Right column for subcategory chart
-                dv.display_subcategory_expenses(subcategory_df, selected_year, selected_month, detailed_view_category)
-                
-            with col2:
-                # Empty left column, just space
-                pass
+        print("In main.py- selected_category ", selected_category)
+        print("In main.py- available_categories ", available_categories)
 
+        # If category is "All Categories", fetch data for all categories
+        if selected_category == "All Categories":
+            print("Fetching all categories data...")
+            subcategory_df = dv.get_user_expenses_by_subcategory(
+                user_id=user_id,
+                selected_year=selected_year,
+                selected_month=selected_month,
+                category=None  # Pass None for all categories
+            )
+        # If the selected category is not "All Categories", check if it's in the available categories
+        elif selected_category not in available_categories:
+            st.warning(f"Category '{selected_category}' is not available.")
         else:
-            st.warning(MESSAGES["no_subcategory_data"].format(category=detailed_view_category))
+            subcategory_df = dv.get_user_expenses_by_subcategory(
+                user_id=user_id,
+                selected_year=selected_year,
+                selected_month=selected_month,
+                category=selected_category
+            )
 
+        # Display subcategory data
+        if not subcategory_df.empty:
+            st.markdown(f"### 📊 Subcategory Expenses Overview for {selected_category}")
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                dv.display_subcategory_expenses(subcategory_df, selected_year, selected_month, selected_category)
+            with col2:
+                st.dataframe(subcategory_df)
+        else:
+            st.warning(MESSAGES["no_subcategory_data"].format(category=selected_category))
 
 
     # Display Insights

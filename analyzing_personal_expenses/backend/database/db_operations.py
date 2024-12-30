@@ -123,37 +123,87 @@ class DatabaseOperations:
         except Exception as e:
             print(f"Error fetching expenses by category: {e}")
             return pd.DataFrame()
-
+        
     def fetch_user_expenses_by_subcategory(self, user_id=None, year=None, month=None, selected_category=None):
-        """Fetch user expenses filtered by user, year, month, or subcategory."""
+        """Fetch user expenses filtered by user, year, month, or category."""
+        print("In Db operations", user_id, year, month, selected_category)
+        
         try:
             conn = self.get_db_connection()
             cursor = conn.cursor()
             
-            if user_id and year and selected_category:
-                query = FETCH_SUBCATEGORY_EXPENSES_FOR_USER_YEARLY
-                params = (user_id, year, selected_category)
-            elif user_id and month and selected_category:
-                query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_USER
-                params = (user_id, month, selected_category)
-            elif year and selected_category:
-                query = FETCH_SUBCATEGORY_EXPENSES_FOR_ALL_USERS_YEARLY
-                params = (year, selected_category)
-            elif month and selected_category:
-                query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_ALL_USERS
-                params = (month, selected_category)
-            else:
-                query = FETCH_ALL_EXPENSES_BY_SUBCATEGORY
-                params = ()
-            
+            # Build the query based on the provided parameters
+            query, params = self.build_query(user_id, year, month, selected_category)
+
+            # Execute the constructed query
             cursor.execute(query, params)
             data = cursor.fetchall()
             conn.close()
-            
-            # Convert the result into a DataFrame
-            df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
+
+            if not data:
+                print(f"No subcategory data available for '{selected_category}'.")
+                return pd.DataFrame()
+
+            # Convert the data into a DataFrame and clean it
+            df = pd.DataFrame(data, columns=['category_name', 'subcategory_name', 'total_amount'])
+
+            # Sort by total_amount and limit to the top 10
+            df = df.sort_values(by='total_amount', ascending=False).head(10)
+
             return self.clean_data(df)
         
         except Exception as e:
-            print(f"Error fetching expenses by subcategory: {e}")
+            print(f"Error fetching expenses by category and subcategory: {e}")
             return pd.DataFrame()
+
+        
+    def build_query(self, user_id, year, month, selected_category):
+        """Construct the query based on input parameters."""
+        base_query = FETCH_ALL_EXPENSES_BY_SUBCATEGORY_BASE_QUERY
+        
+        where_clauses = []
+        params = []
+
+        # User filter
+        if user_id == "ALL Users" or user_id is None:
+            # For all users, don't add the user_id condition
+            pass
+        else:
+            where_clauses.append("e.user_id = %s")
+            params.append(user_id)
+
+        # Year filter (if year is provided)
+        if year:
+            where_clauses.append("YEAR(e.expense_date) = %s")
+            params.append(year)
+
+        # Month filter (if month is provided and year is also provided)
+        if month and year:
+            where_clauses.append("MONTH(e.expense_date) = %s")
+            params.append(month)
+
+        # Category filter
+        if selected_category and selected_category != "All Categories":
+            where_clauses.append("c.category_name = %s")
+            params.append(selected_category)
+
+        # Exclude 'Uncategorized' and NULL subcategories
+        where_clauses.append("s.subcategory_name IS NOT NULL")
+        where_clauses.append("s.subcategory_name != 'Uncategorized'")
+
+        # Add where conditions if any
+        if where_clauses:
+            base_query += " WHERE " + " AND ".join(where_clauses)
+
+        # Ensure grouping by both category_name and subcategory_name
+        base_query += """
+        GROUP BY c.category_name, s.subcategory_name
+        ORDER BY total_amount DESC
+        """
+
+        # Log the final query to inspect
+        print("Constructed Query:", base_query)
+        print("Query Parameters:", params)
+
+        # Return the constructed query and parameters
+        return base_query, params

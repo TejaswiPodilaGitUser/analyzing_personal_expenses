@@ -7,6 +7,7 @@ from frontend.ui.plot_data_insights import PlotDataInsights
 from backend.database.db_operations import DatabaseOperations
 from frontend.ui.horizontal_bar_chart import plot_horizontal_bar_chart
 
+
 class DataVisualization:
     def __init__(self, user_id=None):
         self.user_id = user_id
@@ -17,6 +18,7 @@ class DataVisualization:
         self.plot_insights = PlotDataInsights()
 
     def get_user_expenses(self, selected_year=None, selected_month=None):
+        """Fetch user expenses."""
         try:
             df = self.db_ops.fetch_user_expenses(self.user_id, selected_year, selected_month)
             if df.empty:
@@ -25,40 +27,81 @@ class DataVisualization:
         except Exception as e:
             print(f"Error fetching expenses: {e}")
             return pd.DataFrame()
-
-    def get_user_expenses_by_subcategory(self, selected_year=None, selected_month=None, category=None):
-        try:
-            df = self.db_ops.fetch_user_expenses_by_subcategory(
-                self.user_id, selected_year, selected_month, selected_category=category
-            )
-            return df
-        except Exception as e:
-            print(f"Error fetching expenses: {e}")
-            return pd.DataFrame()
-
     
-    def display_subcategory_expenses(self, df, selected_year=None, selected_month=None, category=None):
-        """Display subcategory expenses chart."""
-        if df.empty:
-            st.warning("No data available for subcategory expenses chart.")
-        else:
-            try:
-                subcategory_df = self.get_user_expenses_by_subcategory(
-                selected_year=selected_year, 
-                selected_month=selected_month, 
-                category=category
+    def get_user_expenses_by_subcategory(self, user_id=None, selected_year=None, selected_month=None, category=None):
+        """Fetch subcategory-level expenses, including all categories if no category is provided."""
+        try:
+            if category and category != "All Categories":
+                # Fetch data for the specific category
+                df = self.db_ops.fetch_user_expenses_by_subcategory(
+                    user_id=self.user_id,
+                    year=selected_year,
+                    month=selected_month,
+                    selected_category=category
+                )
+            else:
+                # If no category is selected or if "All Categories" is chosen, fetch all data
+                df = self.db_ops.fetch_user_expenses_by_subcategory(
+                    user_id=self.user_id,
+                    year=selected_year,
+                    month=selected_month,
+                    selected_category=None  # Fetch all categories if category is None or "All Categories"
                 )
 
-                 # Pass the DataFrame directly
-                self.plot_subcategory.fetch_and_plot(subcategory_df, selected_year, selected_month, category)
+            if df.empty:
+                if category:
+                    st.warning(f"No subcategory data available for '{category}'.")
+                else:
+                    st.warning("No subcategory data available for the selected period.")
+                return pd.DataFrame()
 
-            except Exception as e:
-                st.error(f"Error fetching or plotting subcategory expenses: {e}")
+            return df
+        except Exception as e:
+            st.error(f"Error fetching subcategory expenses: {e}")
+            return pd.DataFrame()
+
+        
+    def display_subcategory_expenses(self, df, selected_year=None, selected_month=None, category=None):
+        """Display subcategory expenses as a chart."""
+        if df.empty:
+            st.warning("No data available for subcategory expenses chart.")
+            return
+
+        try:
+            # Check if category is specified as "All Categories"
+            if category == "All Categories" or category is None:
+                print("Fetching data for all categories...")
+                # Fetch all subcategory data if no category is specified
+                subcategory_df = self.get_user_expenses_by_subcategory(
+                    selected_year=selected_year,
+                    selected_month=selected_month,
+                    category=None  # Fetch all categories
+                )
+            else:
+                # Check if category is in the top 10 categories
+                if category not in df['category_name'].unique():
+                    st.warning(f"Category '{category}' is not in the Top 10 categories.")
+                    return
+                
+                subcategory_df = self.get_user_expenses_by_subcategory(
+                    selected_year=selected_year,
+                    selected_month=selected_month,
+                    category=category
+                )
+
+                if subcategory_df.empty:
+                    # Fallback to "Uncategorized" if no data for selected category
+                    subcategory_df = df[df['category_name'] == "Uncategorized"]
+                    st.warning(f"No subcategory data available for '{category}'. Displaying 'Uncategorized' data.")
+            
+            # Plot the chart using PlotSubcategoryExpenses
+            self.plot_subcategory.fetch_and_plot(subcategory_df, selected_year, selected_month, category)
+        except Exception as e:
+            st.error(f"Error displaying subcategory expenses: {e}")
 
 
     def display_monthly_expenses(self, df, selected_year=None, selected_month=None, chart_type="pie"):
         """Display monthly expenses chart filtered by year and month."""
-        # Ensure the month parameter is numeric and properly passed
         self.plot_monthly.plot(df, selected_year=selected_year, selected_month=selected_month, chart_type=chart_type)
 
 

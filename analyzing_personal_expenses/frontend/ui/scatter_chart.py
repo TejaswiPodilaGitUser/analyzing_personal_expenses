@@ -10,7 +10,7 @@ def plot_scatter_chart(data, title, chart_size=(6, 4)):
     
     ax.set_xlabel('Categories', fontweight='bold')
     ax.set_ylabel('Amount Paid', fontweight='bold')
-    ax.set_title(title, fontweight='bold')
+    #ax.set_title(title, fontweight='bold')
     
     # Rotate x-axis labels for better readability
     ax.set_xticks(range(len(data.index)))

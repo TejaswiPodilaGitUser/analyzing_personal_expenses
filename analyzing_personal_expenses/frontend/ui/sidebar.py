@@ -75,6 +75,10 @@ def select_chart_type() -> str:
     return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line"], index=0)
 
 
+# For the selected user_id, Selected year and Month
+# Display the category selection dropdown in the sidebar
+# Only after clicking 'More Detailed View'
+# Return the selected category
 def select_category(user_id: Optional[int]) -> Optional[str]:
     """
     Display category selection dropdown in the sidebar only after clicking 'More Detailed View'.
@@ -88,14 +92,16 @@ def select_category(user_id: Optional[int]) -> Optional[str]:
     if st.session_state['show_detailed_view']:
         db_ops = DatabaseOperations()
         try:
-            categories = db_ops.fetch_user_categories(user_id) if user_id else db_ops.fetch_all_categories()
+            print("Fetching categories...user_id:", user_id)
+            #Add All Categories to the list of categories
+            categories = db_ops.fetch_user_categories(user_id) if user_id is not None else db_ops.fetch_all_categories()
+            categories.insert(0, "All Categories")
             if not categories:
                 st.sidebar.warning("No categories available.")
                 return None
             category_name = st.sidebar.selectbox("Select Category", categories)
             st.session_state['detailed_view_category'] = category_name
+            return category_name
         except Exception as e:
             st.sidebar.error(f"Error fetching categories: {e}")
             return None
-
-    return st.session_state.get('detailed_view_category', None)
