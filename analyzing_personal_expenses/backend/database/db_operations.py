@@ -20,17 +20,24 @@ class DatabaseOperations:
         return mysql.connector.connect(**self.db_config)
 
     def clean_data(self, df):
-        """Clean the data by ensuring correct formats for 'expense_date' and 'amount_paid'."""
-        # Convert 'expense_date' to datetime format
-        df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
+        """Clean the data by ensuring correct formats."""
+        if 'expense_date' in df.columns:
+            # Convert 'expense_date' to datetime format
+            df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
+            df = df.dropna(subset=['expense_date'])
         
-        # Convert 'amount_paid' to numeric, coercing errors to NaN
-        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+        if 'amount_paid' in df.columns:
+            # Convert 'amount_paid' to numeric
+            df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+            df = df.dropna(subset=['amount_paid'])
         
-        # Drop rows with missing data in critical columns
-        df = df.dropna(subset=['expense_date', 'amount_paid'])
+        if 'total_amount' in df.columns:
+            # Convert 'total_amount' to numeric
+            df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
+            df = df.dropna(subset=['total_amount'])
         
         return df
+
 
     def fetch_user_expenses(self, user_id=None, year=None, month=None):
         """Fetch user expenses filtered by user, year, or month."""
@@ -117,54 +124,36 @@ class DatabaseOperations:
             print(f"Error fetching expenses by category: {e}")
             return pd.DataFrame()
 
-    def fetch_subcategory_user_expenses_yearly(self, user_id, selected_year, category_name):
-        """Fetch yearly expenses by subcategory for a specific user."""
-        query = FETCH_SUBCATEGORY_EXPENSES_FOR_USER_YEARLY
-        conn = self.get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (user_id, selected_year, category_name))
-        data = cursor.fetchall()
-        conn.close()
+    def fetch_user_expenses_by_subcategory(self, user_id=None, year=None, month=None, selected_category=None):
+        """Fetch user expenses filtered by user, year, month, or subcategory."""
+        try:
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
+            
+            if user_id and year and selected_category:
+                query = FETCH_SUBCATEGORY_EXPENSES_FOR_USER_YEARLY
+                params = (user_id, year, selected_category)
+            elif user_id and month and selected_category:
+                query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_USER
+                params = (user_id, month, selected_category)
+            elif year and selected_category:
+                query = FETCH_SUBCATEGORY_EXPENSES_FOR_ALL_USERS_YEARLY
+                params = (year, selected_category)
+            elif month and selected_category:
+                query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_ALL_USERS
+                params = (month, selected_category)
+            else:
+                query = FETCH_ALL_EXPENSES_BY_SUBCATEGORY
+                params = ()
+            
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            conn.close()
+            
+            # Convert the result into a DataFrame
+            df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
+            return self.clean_data(df)
         
-        # Convert to DataFrame and clean
-        df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
-        return self.clean_data(df)
-
-    def fetch_subcategory_user_expenses_monthly(self, user_id, selected_month, category_name):
-        """Fetch monthly expenses by subcategory for a specific user."""
-        query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_USER
-        conn = self.get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (user_id, selected_month, category_name))
-        data = cursor.fetchall()
-        conn.close()
-        
-        # Convert to DataFrame and clean
-        df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
-        return self.clean_data(df)
-
-    def fetch_subcategory_expenses_yearly_all_users(self, selected_year, category_name):
-        """Fetch yearly expenses by subcategory for all users."""
-        query = FETCH_SUBCATEGORY_EXPENSES_FOR_ALL_USERS_YEARLY
-        conn = self.get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (selected_year, category_name))
-        data = cursor.fetchall()
-        conn.close()
-        
-        # Convert to DataFrame and clean
-        df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
-        return self.clean_data(df)
-
-    def fetch_subcategory_expenses_monthly_all_users(self, selected_month, category_name):
-        """Fetch monthly expenses by subcategory for all users."""
-        query = FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_ALL_USERS
-        conn = self.get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (selected_month, category_name))
-        data = cursor.fetchall()
-        conn.close()
-        
-        # Convert to DataFrame and clean
-        df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
-        return self.clean_data(df)
+        except Exception as e:
+            print(f"Error fetching expenses by subcategory: {e}")
+            return pd.DataFrame()

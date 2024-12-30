@@ -90,12 +90,32 @@ def main():
             
             insights = get_insights(filtered_df, selected_year)
 
-    # Display Subcategory Breakdown
+    # Sub Category Bar chart if a category is selected
     if detailed_view_category:
-        if visualization_type == "Monthly":
-            dv.plot_subcategory.display_subcategory_expenses_user_month(user_id, selected_month, detailed_view_category)
-        elif visualization_type == "Yearly":
-            dv.plot_subcategory.display_subcategory_expenses_user_yearly(user_id, selected_year, detailed_view_category)
+        subcategory_df = dv.get_user_expenses_by_subcategory(
+            selected_year=selected_year, 
+            selected_month=selected_month, 
+            category=detailed_view_category
+        )
+
+        if not subcategory_df.empty:
+            st.markdown(f"### 📊 Subcategory Expenses Overview for {detailed_view_category}")
+
+            # Create two columns to adjust layout
+            col1, col2 = st.columns([1, 1])  # Left column (empty space) and right column (for chart)
+            
+            with col1:
+                # Right column for subcategory chart
+                dv.display_subcategory_expenses(subcategory_df, selected_year, selected_month, detailed_view_category)
+                
+            with col2:
+                # Empty left column, just space
+                pass
+
+        else:
+            st.warning(MESSAGES["no_subcategory_data"].format(category=detailed_view_category))
+
+
 
     # Display Insights
     st.markdown("---")

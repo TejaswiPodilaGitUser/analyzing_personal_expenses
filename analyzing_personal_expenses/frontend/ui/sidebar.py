@@ -6,21 +6,30 @@ from typing import Dict, Tuple, Optional
 def display_sidebar(users: Dict[str, int]) -> Tuple[Optional[int], str, str, Optional[str], Optional[str], Optional[str]]:
     """
     Display the sidebar with user filters and return selected values.
+    Ensures a tuple is always returned with the expected values.
     """
     st.sidebar.title("Choose Filters")
 
+    # Select user
     user_id = select_user(users)
+    
+    # Select visualization type (Yearly or Monthly)
     visualization_type = select_visualization_type()
 
+    # Select year
     selected_year = select_year()
     if not selected_year:
         selected_year = YEARS[0] if YEARS else "2025"  # Ensure fallback year is valid
 
+    # Select month if Monthly visualization is chosen
     selected_month = None
     if visualization_type == "Monthly":
         selected_month = select_month()
 
+    # Select chart type (Pie, Bar, etc.)
     chart_type = select_chart_type()
+
+    # Select category for detailed view (if detailed view is enabled)
     detailed_view_category = select_category(user_id)
 
     return user_id, visualization_type, chart_type, selected_month, selected_year, detailed_view_category
@@ -63,7 +72,7 @@ def select_chart_type() -> str:
     """
     Display chart type dropdown in the sidebar.
     """
-    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar","Scatter","Line"], index=0)
+    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line"], index=0)
 
 
 def select_category(user_id: Optional[int]) -> Optional[str]:

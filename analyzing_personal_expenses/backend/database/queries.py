@@ -78,6 +78,7 @@ GROUP BY s.subcategory_name
 ORDER BY total_amount DESC
 """
 
+
 # Fetch expenses by category for a user for a specific month
 FETCH_EXPENSES_BY_CATEGORY_FOR_MONTH_FOR_USER = """
 SELECT 
@@ -86,7 +87,10 @@ SELECT
 FROM expenses e
 LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id
 LEFT JOIN categories c ON s.category_id = c.category_id
-WHERE e.user_id = %s AND DATE_FORMAT(e.expense_date, '%%Y-%%m') = %s AND c.category_name = %s
+WHERE e.user_id = %s 
+    AND YEAR(e.expense_date) = %s 
+    AND MONTH(e.expense_date) = %s 
+    AND c.category_name = %s
 GROUP BY s.subcategory_name
 ORDER BY total_amount DESC
 """
@@ -112,7 +116,7 @@ SELECT
 FROM expenses e
 LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id
 LEFT JOIN categories c ON s.category_id = c.category_id
-WHERE DATE_FORMAT(e.expense_date, '%%Y-%%m') = %s AND c.category_name = %s
+WHERE YEAR(e.expense_date) = %s  AND MONTH(e.expense_date) = %s AND c.category_name = %s
 GROUP BY s.subcategory_name
 ORDER BY total_amount DESC
 """

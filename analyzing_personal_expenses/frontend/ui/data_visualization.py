@@ -17,17 +17,44 @@ class DataVisualization:
         self.plot_insights = PlotDataInsights()
 
     def get_user_expenses(self, selected_year=None, selected_month=None):
-        """Fetch user expenses from the database filtered by year and month."""
         try:
             df = self.db_ops.fetch_user_expenses(self.user_id, selected_year, selected_month)
-
             if df.empty:
                 raise ValueError("No expenses found for the selected user and period.")
             return df
         except Exception as e:
             print(f"Error fetching expenses: {e}")
             return pd.DataFrame()
-        
+
+    def get_user_expenses_by_subcategory(self, selected_year=None, selected_month=None, category=None):
+        try:
+            df = self.db_ops.fetch_user_expenses_by_subcategory(
+                self.user_id, selected_year, selected_month, selected_category=category
+            )
+            return df
+        except Exception as e:
+            print(f"Error fetching expenses: {e}")
+            return pd.DataFrame()
+
+    
+    def display_subcategory_expenses(self, df, selected_year=None, selected_month=None, category=None):
+        """Display subcategory expenses chart."""
+        if df.empty:
+            st.warning("No data available for subcategory expenses chart.")
+        else:
+            try:
+                subcategory_df = self.get_user_expenses_by_subcategory(
+                selected_year=selected_year, 
+                selected_month=selected_month, 
+                category=category
+                )
+
+                 # Pass the DataFrame directly
+                self.plot_subcategory.fetch_and_plot(subcategory_df, selected_year, selected_month, category)
+
+            except Exception as e:
+                st.error(f"Error fetching or plotting subcategory expenses: {e}")
+
 
     def display_monthly_expenses(self, df, selected_year=None, selected_month=None, chart_type="pie"):
         """Display monthly expenses chart filtered by year and month."""
@@ -38,7 +65,7 @@ class DataVisualization:
     def display_yearly_expenses(self, df, selected_year="2025", chart_type="pie"):
         """Display yearly expenses chart."""
         self.plot_yearly.plot(df, selected_year=selected_year, chart_type=chart_type)
-        
+    
 
     def display_data_insights(self, df):
         """Display data insights."""

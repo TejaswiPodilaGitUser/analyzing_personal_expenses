@@ -20,5 +20,7 @@ MESSAGES = {
     "no_year_data": "No data available for the year {year}.",  # Ensure this key exists
     "no_export_data": "No data available to export.",
     "no_insights": "No data available.",
-    "expense_summary_title": "📊 Expense Summary: Key Spending Insights"
+    "expense_summary_title": "📊 Expense Summary: Key Spending Insights",
+    "no_subcategory_data": "No data available for the selected subcategory: {category}."
+
 }

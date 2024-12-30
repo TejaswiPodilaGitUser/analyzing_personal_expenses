@@ -73,8 +73,11 @@ class PlotMonthlyExpenses:
         elif chart_type.lower() == "pie":
             plot_pie_chart(
                 monthly_expenses, 
+                #Add Category name for label
+                labels=monthly_expenses.index,
                 title=f"Spending Categories - {selected_month} {selected_year}", 
-                chart_size=chart_size
+                chart_size=chart_size,
+                label_fontsize=12
             )
         elif chart_type.lower() == "line":
             plot_line_chart(
