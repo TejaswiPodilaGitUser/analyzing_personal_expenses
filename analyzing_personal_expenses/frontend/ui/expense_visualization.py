@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
+from frontend.ui.line_chart import plot_line_chart
+from frontend.ui.scatter_chart import plot_scatter_chart
 
 
 class ExpenseVisualization:
@@ -66,3 +68,7 @@ class ExpenseVisualization:
             plot_pie_chart(df_year.set_index('category_name')['amount_paid'], title)
         elif chart_type == "Bar":
             plot_bar_chart(df_year.set_index('category_name')['amount_paid'], xlabel, ylabel, title)
+        elif chart_type == "Line":
+            plot_line_chart(df_year.set_index('category_name')['amount_paid'], xlabel, ylabel, title)
+        elif chart_type == "scatter":
+            plot_scatter_chart(df_year.set_index('category_name')['amount_paid'], xlabel, ylabel, title)

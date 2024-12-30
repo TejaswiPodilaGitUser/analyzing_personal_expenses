@@ -61,7 +61,7 @@ def main():
                 st.dataframe(top_10_df)
             
             with col2:
-                if chart_type in ['Bar', 'Pie']:
+                if chart_type in ['Bar', 'Pie', 'Line', 'Scatter']:
                     selected_month_name = selected_month
                     dv.display_monthly_expenses(filtered_df, selected_year, selected_month_name, chart_type)
                 else:

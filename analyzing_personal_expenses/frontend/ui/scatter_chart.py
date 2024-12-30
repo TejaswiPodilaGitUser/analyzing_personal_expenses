@@ -1,20 +1,23 @@
 import matplotlib.pyplot as plt
+import streamlit as st
 
-def plot_scatter_chart(df, x, y, title, chart_size=(6, 4), label_rotation=45):
-    """Plot a scatter chart with label rotation."""
+def plot_scatter_chart(data, title, chart_size=(6, 4)):
+    """Plot a scatter plot for expense outliers."""
     fig, ax = plt.subplots(figsize=chart_size)
     
-    ax.scatter(df[x], df[y], c='blue', edgecolors='black', alpha=0.7)
-    ax.set_xlabel(x, fontsize=12, fontweight='bold')
-    ax.set_ylabel(y, fontsize=12, fontweight='bold')
-    ax.set_title(title, fontsize=14, fontweight='bold')
+    # Plot scatter points
+    ax.scatter(data.index, data.values, color='b', alpha=0.5)
     
-    # Rotate X-axis labels for better readability
-    plt.xticks(rotation=label_rotation, ha='right', fontsize=10)  # label_rotation can be adjusted as needed
-
-    # Optional: Add grid for better visualization
-    ax.grid(True, linestyle='--', alpha=0.7)
+    ax.set_xlabel('Categories', fontweight='bold')
+    ax.set_ylabel('Amount Paid', fontweight='bold')
+    ax.set_title(title, fontweight='bold')
     
-    # Display the plot
+    # Rotate x-axis labels for better readability
+    ax.set_xticks(range(len(data.index)))
+    ax.set_xticklabels(data.index, rotation=45, ha='right', fontsize=8)
+    
+    # Adjust aspect ratio automatically
+    ax.set_aspect('auto')  # Ensures no forced aspect ratio
+    
     plt.tight_layout()
-    return fig
+    st.pyplot(fig)

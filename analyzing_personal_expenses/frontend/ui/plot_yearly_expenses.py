@@ -2,13 +2,15 @@ import pandas as pd
 import streamlit as st
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
+from frontend.ui.line_chart import plot_line_chart
+from frontend.ui.scatter_chart import plot_scatter_chart
 
 
 class PlotYearlyExpenses:
     def __init__(self):
         pass
 
-    def plot(self, df, selected_year="2025", chart_type="pie", chart_size=(8, 5)):
+    def plot(self, df, selected_year="2025", chart_type="pie", chart_size=(6, 4)):
         """Create bar and pie charts for yearly expenses."""
         if df.empty:
             st.warning("No data available to plot yearly expenses.")
@@ -72,5 +74,20 @@ class PlotYearlyExpenses:
                 title=f"Yearly Expenses for {selected_year}",
                 chart_size=chart_size
             )
+        elif chart_type.lower() == "line":
+            plot_line_chart(
+                yearly_expenses,
+                xlabel="Expense Categories",
+                ylabel="Amount Paid ($)",
+                title=f"Yearly Expenses for {selected_year}",
+                chart_size=chart_size
+            )
+        elif chart_type.lower() == "scatter":
+            plot_scatter_chart(
+                yearly_expenses, 
+                title=f"Yearly Expenses (Scatter Plot) - {selected_year}", 
+                chart_size=(6, 4)
+            )
+
         else:
             st.error(f"Unsupported chart type: {chart_type}")

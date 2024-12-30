@@ -4,7 +4,7 @@ def select_user():
     return st.sidebar.selectbox("Select User", ["All Users", "User 1", "User 2", "Admin"])
 
 def select_chart_type():
-    return st.sidebar.selectbox("Select Chart Type", ["Bar", "Pie"])
+    return st.sidebar.selectbox("Select Chart Type", ["Bar", "Pie", "Line", "Scatter"])
 
 def select_visualization_type():
     return st.sidebar.selectbox("Special Visualization", ["Monthly", "Yearly"])

@@ -38,6 +38,7 @@ class DataVisualization:
     def display_yearly_expenses(self, df, selected_year="2025", chart_type="pie"):
         """Display yearly expenses chart."""
         self.plot_yearly.plot(df, selected_year=selected_year, chart_type=chart_type)
+        
 
     def display_data_insights(self, df):
         """Display data insights."""

@@ -63,7 +63,7 @@ def select_chart_type() -> str:
     """
     Display chart type dropdown in the sidebar.
     """
-    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar"], index=0)
+    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar","Scatter","Line"], index=0)
 
 
 def select_category(user_id: Optional[int]) -> Optional[str]:
