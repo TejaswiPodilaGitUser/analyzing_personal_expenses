@@ -59,7 +59,11 @@ def main():
             with col1:
                 st.markdown("### 💰 Top 10 Spending Categories")
                 # Select only the relevant columns for display and remove date-related columns
-                top_10_df = filtered_df[['category_name', 'amount_paid']].nlargest(10, 'amount_paid')
+                # Aggregate amount_paid by category
+                top_10_df = (filtered_df
+                         .groupby('category_name', as_index=False)
+                         .agg(total_amount=('amount_paid', 'sum'))
+                         .nlargest(10, 'total_amount'))
                 st.dataframe(top_10_df)
             
             with col2:
@@ -84,7 +88,11 @@ def main():
             with col1:
                 st.markdown("### 💰 Top 10 Yearly Expenses")
                 # Select only the relevant columns for display and remove date-related columns
-                top_10_df = filtered_df[['category_name', 'amount_paid']].nlargest(10, 'amount_paid')
+                # Aggregate amount_paid by category
+                top_10_df = (filtered_df
+                         .groupby('category_name', as_index=False)
+                         .agg(total_amount=('amount_paid', 'sum'))
+                         .nlargest(10, 'total_amount'))
                 st.dataframe(top_10_df)
             
             with col2:
