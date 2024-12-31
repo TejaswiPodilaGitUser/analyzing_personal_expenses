@@ -1,5 +1,7 @@
 # Analyzing Personal Expenses
 
+<img width="1675" alt="image" src="https://github.com/user-attachments/assets/76990c1c-943d-4638-97a9-143eaf861dca" />
+
 ---
 
 ## 📥 Download & Setup
@@ -102,9 +104,9 @@ streamlit run app/main.py
 
 ## 📚 Summary of Libraries Used
 
-1. Streamlit: For building interactive dashboards and displaying visual insights.
-2. Faker: To generate synthetic data for testing and populating the database.
-3. Matplotlib: For creating visualizations like bar charts and pie charts to represent expenses effectively.
+- Streamlit: For building interactive dashboards and displaying visual insights.
+- Faker: To generate synthetic data for testing and populating the database.
+- Matplotlib: For creating visualizations like bar charts and pie charts to represent expenses effectively.
 
 More Package Descriptions:
 - pandas: Data manipulation and analysis library.
