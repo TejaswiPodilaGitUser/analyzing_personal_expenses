@@ -2,6 +2,8 @@
 
 <img width="1675" alt="image" src="https://github.com/user-attachments/assets/76990c1c-943d-4638-97a9-143eaf861dca" />
 
+<img width="1691" alt="image" src="https://github.com/user-attachments/assets/a1a0d921-3907-430e-b544-87a1de8c7ef4" />
+
 ---
 
 ## 📥 Download & Setup
