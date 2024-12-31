@@ -12,6 +12,7 @@ from backend.database.db_operations import DatabaseOperations
 from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
 from frontend.ui.data_insights import get_insights
+from scripts.static_data import CHART_TYPES
 
 def main():
     """Main function to run the Expense Tracker Streamlit App."""
@@ -30,7 +31,7 @@ def main():
 
     # Fetch User Data for the year
     dv = DataVisualization(user_id=user_id)
-    df = dv.get_user_expenses()
+    df = dv.get_user_expenses(selected_year=selected_year, selected_month=selected_month)
 
     if df.empty:
         st.warning(MESSAGES["no_user_data"])
@@ -51,6 +52,8 @@ def main():
         # Ensure filtering with month name (string)
         filtered_df = df[(df['expense_month'] == selected_month) & (df['expense_year'] == int(selected_year))]
 
+        #print("Filtered_df :", filtered_df)
+
         if filtered_df.empty:
             st.warning(MESSAGES["no_month_data"].format(month=selected_month, year=selected_year))
         else:
@@ -65,14 +68,16 @@ def main():
                          .groupby('category_name', as_index=False)
                          .agg(total_amount=('amount_paid', 'sum'))
                          .nlargest(10, 'total_amount'))
+               # print("Top 10 df: ", top_10_df)
                 st.dataframe(top_10_df)
             
             with col2:
-                if chart_type in ['Bar', 'Pie', 'Line', 'Scatter']:
+                if chart_type in CHART_TYPES:
                     selected_month_name = selected_month
                     dv.display_monthly_expenses(filtered_df, selected_year, selected_month_name, chart_type)
                 else:
-                    st.warning("Invalid chart type selected. Please choose Bar, Pie.")
+                   st.warning(f"Invalid chart type selected: {chart_type}")
+
             insights = get_insights(filtered_df, selected_year, selected_month)
 
     # Yearly Visualization
@@ -118,26 +123,37 @@ def main():
         print("In main.py- available_categories ", available_categories)
 
         # If category is "All Categories", fetch data for all categories
-        if selected_category == "All Categories":
-            print("Fetching all categories data...")
-            subcategory_df = dv.get_user_expenses_by_subcategory(
-                user_id=user_id,
-                selected_year=selected_year,
-                selected_month=selected_month,
-                category=None  # Pass None for all categories
-            )
-        # If the selected category is not "All Categories", check if it's in the available categories
-        elif selected_category not in available_categories:
-            st.warning(f"Category '{selected_category}' is not available.")
-        else:
-            subcategory_df = dv.get_user_expenses_by_subcategory(
-                user_id=user_id,
-                selected_year=selected_year,
-                selected_month=selected_month,
-                category=selected_category
-            )
+        # Fetch subcategory data for a specific category and year/month
+        # Ensure subcategory_df is fetched with proper filters
+        # Fetch updated subcategory data
+        subcategory_df = dv.get_user_expenses_by_subcategory(
+            user_id=user_id,
+            selected_year=selected_year,
+            selected_month=selected_month,
+            category=selected_category
+        )
 
-        # Display subcategory data
+        # Check structure
+        print("Subcategory DataFrame Columns:", subcategory_df.columns)
+        print("Subcategory DataFrame Head:", subcategory_df.head())
+
+        # Validate category totals
+        if 'category_name' in subcategory_df.columns and 'total_amount' in subcategory_df.columns:
+            subcategory_totals = subcategory_df.groupby('category_name')['total_amount'].sum().reset_index()
+            top_10_totals = top_10_df.groupby('category_name')['total_amount'].sum().reset_index()
+            
+            print("Validating Totals Between Subcategory and Top 10 DataFrames")
+            print("Subcategory Totals:\n", subcategory_totals)
+            print("Top 10 Totals:\n", top_10_totals)
+            
+            if not subcategory_totals.equals(top_10_totals):
+                print("🚨 **Discrepancy Detected! Totals do not match.**")
+            else:
+                print("✅ **Totals Match Successfully!**")
+        else:
+            print("⚠️ **Required columns are missing in subcategory_df or top_10_df.**")
+
+        # Display Subcategory Data
         if not subcategory_df.empty:
             st.markdown(f"### 📊 Subcategory Expenses Overview for {selected_category}")
             col1, col2 = st.columns([1, 1])

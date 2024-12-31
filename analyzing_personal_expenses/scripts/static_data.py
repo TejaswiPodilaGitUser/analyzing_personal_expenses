@@ -27,3 +27,5 @@ CATEGORY_DESCRIPTIONS = {
     'Sports & Fitness': ['Gym Membership', 'Yoga Class', 'Cricket Kit'],
     'School Fees': ['Tuition Fees', 'Books & Stationary', 'School Fees', 'Trips']
 }
+
+CHART_TYPES= {'Bar', 'Pie', 'Line', 'Scatter','Donut'}

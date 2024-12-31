@@ -31,22 +31,13 @@ class DataVisualization:
     def get_user_expenses_by_subcategory(self, user_id=None, selected_year=None, selected_month=None, category=None):
         """Fetch subcategory-level expenses, including all categories if no category is provided."""
         try:
-            if category and category != "All Categories":
                 # Fetch data for the specific category
-                df = self.db_ops.fetch_user_expenses_by_subcategory(
-                    user_id=self.user_id,
-                    year=selected_year,
-                    month=selected_month,
-                    selected_category=category
-                )
-            else:
-                # If no category is selected or if "All Categories" is chosen, fetch all data
-                df = self.db_ops.fetch_user_expenses_by_subcategory(
-                    user_id=self.user_id,
-                    year=selected_year,
-                    month=selected_month,
-                    selected_category=None  # Fetch all categories if category is None or "All Categories"
-                )
+            df = self.db_ops.fetch_user_expenses_by_subcategory(
+                user_id=self.user_id,
+                year=selected_year,
+                month=selected_month,
+                selected_category=category
+            )
 
             if df.empty:
                 if category:

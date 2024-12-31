@@ -3,6 +3,7 @@ import streamlit as st
 from frontend.ui.bar_chart import plot_bar_chart
 from frontend.ui.pie_chart import plot_pie_chart
 from frontend.ui.line_chart import plot_line_chart
+from frontend.ui.donut_chart import plot_donut_chart
 from frontend.ui.scatter_chart import plot_scatter_chart
 
 class PlotMonthlyExpenses:
@@ -72,6 +73,15 @@ class PlotMonthlyExpenses:
             )
         elif chart_type.lower() == "pie":
             plot_pie_chart(
+                monthly_expenses, 
+                #Add Category name for label
+                labels=monthly_expenses.index,
+                title=f"Spending Categories - {selected_month} {selected_year}", 
+                chart_size=chart_size,
+                label_fontsize=12
+            )
+        elif chart_type.lower() == "donut":
+            plot_donut_chart(
                 monthly_expenses, 
                 #Add Category name for label
                 labels=monthly_expenses.index,

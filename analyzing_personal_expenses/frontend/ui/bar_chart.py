@@ -27,7 +27,7 @@ def plot_bar_chart(data, xlabel, ylabel, title, chart_size=(8, 6)):
     # Set labels and title
     ax.set_xlabel(xlabel, fontweight='bold')
     ax.set_ylabel(ylabel, fontweight='bold')
-    ax.set_title(title, fontweight='bold')
+    #ax.set_title(title, fontweight='bold')
     
     # Improve label readability with rotated x-axis labels
     ax.set_xticks(range(len(data.index)))
