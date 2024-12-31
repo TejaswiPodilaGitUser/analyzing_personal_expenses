@@ -19,7 +19,7 @@ def display_sidebar(users: Dict[str, int]) -> Tuple[Optional[int], str, str, Opt
     # Select year
     selected_year = select_year()
     if not selected_year:
-        selected_year = YEARS[0] if YEARS else "2025"  # Ensure fallback year is valid
+        selected_year = YEARS[0] if YEARS else "2024"  # Ensure fallback year is valid
 
     # Select month if Monthly visualization is chosen
     selected_month = None
@@ -49,18 +49,20 @@ def select_visualization_type() -> str:
     """
     return st.sidebar.radio("Analysis Period", ["Yearly", "Monthly"], index=0)
 
-
 def select_year() -> Optional[str]:
     """
-    Display year selection dropdown in the sidebar.
+    Display year selection dropdown in the sidebar with 2024 as the default year.
     """
     if YEARS:
-        return st.sidebar.selectbox("Select Year", YEARS, index=0)
+        # Ensure that 2024 is selected by default, or fallback to the first year if not available
+        default_year = "2024"
+        index = YEARS.index(default_year) if default_year in YEARS else 0
+        return st.sidebar.selectbox("Select Year", YEARS, index=index)
     else:
         st.sidebar.warning("No years available in the database.")
         return None
 
-
+        
 def select_month() -> Optional[str]:
     """
     Display month selection dropdown in the sidebar.
@@ -75,10 +77,6 @@ def select_chart_type() -> str:
     return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line"], index=0)
 
 
-# For the selected user_id, Selected year and Month
-# Display the category selection dropdown in the sidebar
-# Only after clicking 'More Detailed View'
-# Return the selected category
 def select_category(user_id: Optional[int]) -> Optional[str]:
     """
     Display category selection dropdown in the sidebar only after clicking 'More Detailed View'.
@@ -93,7 +91,7 @@ def select_category(user_id: Optional[int]) -> Optional[str]:
         db_ops = DatabaseOperations()
         try:
             print("Fetching categories...user_id:", user_id)
-            #Add All Categories to the list of categories
+            # Add All Categories to the list of categories
             categories = db_ops.fetch_user_categories(user_id) if user_id is not None else db_ops.fetch_all_categories()
             categories.insert(0, "All Categories")
             if not categories:

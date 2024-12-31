@@ -12,6 +12,7 @@ from backend.database.db_operations import DatabaseOperations
 from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
 from frontend.ui.data_insights import get_insights
+
 def main():
     """Main function to run the Expense Tracker Streamlit App."""
     st.set_page_config(layout="wide")

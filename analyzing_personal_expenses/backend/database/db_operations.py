@@ -41,6 +41,8 @@ class DatabaseOperations:
 
     def fetch_user_expenses(self, user_id=None, year=None, month=None):
         """Fetch user expenses filtered by user, year, or month."""
+        print(f"In DB Operations, User_id: {user_id}, Year: {year}, Month: {month}")
+       
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
@@ -60,6 +62,10 @@ class DatabaseOperations:
             query = FETCH_ALL_EXPENSES
             params = ()
         
+        # Log the final query to inspect
+        print("In db_operations-fetch_user_expenses- Constructed Query:", query)
+        print("Query Parameters:", params)
+
         cursor.execute(query, params)
         data = cursor.fetchall()
         conn.close()
@@ -123,7 +129,7 @@ class DatabaseOperations:
         except Exception as e:
             print(f"Error fetching expenses by category: {e}")
             return pd.DataFrame()
-        
+
     def fetch_user_expenses_by_subcategory(self, user_id=None, year=None, month=None, selected_category=None):
         """Fetch user expenses filtered by user, year, month, or category."""
         print("In Db operations", user_id, year, month, selected_category)
@@ -133,7 +139,7 @@ class DatabaseOperations:
             cursor = conn.cursor()
             
             # Build the query based on the provided parameters
-            query, params = self.build_query(user_id, year, month, selected_category)
+            query, params = self.build_subcategory_query(user_id, year, month, selected_category)
 
             # Execute the constructed query
             cursor.execute(query, params)
@@ -147,28 +153,28 @@ class DatabaseOperations:
             # Convert the data into a DataFrame and clean it
             df = pd.DataFrame(data, columns=['category_name', 'subcategory_name', 'total_amount'])
 
+            # Remove null and 'Uncategorized' entries
+            df = df.dropna(subset=['subcategory_name'])
+            df = df[df['subcategory_name'] != 'Uncategorized']
+
             # Sort by total_amount and limit to the top 10
             df = df.sort_values(by='total_amount', ascending=False).head(10)
 
             return self.clean_data(df)
         
         except Exception as e:
-            print(f"Error fetching expenses by category and subcategory: {e}")
+            print(f"Error fetching expenses by subcategory: {e}")
             return pd.DataFrame()
 
-        
-    def build_query(self, user_id, year, month, selected_category):
-        """Construct the query based on input parameters."""
+    def build_subcategory_query(self, user_id, year, month, selected_category):
+        """Construct the query based on input parameters for subcategories."""
         base_query = FETCH_ALL_EXPENSES_BY_SUBCATEGORY_BASE_QUERY
         
         where_clauses = []
         params = []
 
         # User filter
-        if user_id == "ALL Users" or user_id is None:
-            # For all users, don't add the user_id condition
-            pass
-        else:
+        if user_id and user_id != "ALL Users":
             where_clauses.append("e.user_id = %s")
             params.append(user_id)
 
@@ -202,7 +208,7 @@ class DatabaseOperations:
         """
 
         # Log the final query to inspect
-        print("Constructed Query:", base_query)
+        print("build_subcategory_query- Constructed Query:", base_query)
         print("Query Parameters:", params)
 
         # Return the constructed query and parameters
