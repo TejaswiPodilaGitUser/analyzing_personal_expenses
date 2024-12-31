@@ -3,8 +3,8 @@ import calendar
 import os
 from dotenv import load_dotenv
 import pandas as pd
-from backend.database.queries import *
 import logging
+from backend.database.queries import *  # Import queries from the queries file
 
 load_dotenv()
 
@@ -25,22 +25,27 @@ class DatabaseOperations:
         """Establish and return a database connection."""
         return mysql.connector.connect(**self.db_config)
 
-    def clean_data(self, df):
-        """Clean the data by ensuring correct formats."""
-        if 'expense_date' in df.columns:
-            df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
-            df = df.dropna(subset=['expense_date'])
-        
-        if 'amount_paid' in df.columns:
-            df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-            df = df.dropna(subset=['amount_paid'])
-        
-        if 'total_amount' in df.columns:
-            df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
-            df = df.dropna(subset=['total_amount'])
-        
-        return df
-    
+    def fetch_user_expenses(self, user_id=None):
+        """Fetch expenses for a specific user or all users."""
+        query = """
+        SELECT e.expense_date, c.category_name, e.amount_paid
+        FROM expenses e
+        JOIN categories c ON e.category_id = c.category_id
+        """
+        if user_id and user_id != "All Users":
+            query += " WHERE e.user_id = %s"
+
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+        if user_id and user_id != "All Users":
+            cursor.execute(query, (user_id,))
+        else:
+            cursor.execute(query)
+
+        data = cursor.fetchall()
+        conn.close()
+
+        return pd.DataFrame(data, columns=['expense_date', 'category_name', 'amount_paid'])
 
     def fetch_users(self):
         """Fetch all users from the database."""
@@ -67,176 +72,66 @@ class DatabaseOperations:
         except Exception as e:
             logger.error(f"Error fetching categories: {e}")
             return []
-
-    def fetch_user_expenses(self, user_id=None, year=None, month=None):
-        """Fetch user expenses filtered by user, year, month"""
+        
+    def execute_query(self, query):
+        """Execute SQL query and return results as DataFrame."""
         try:
-            query, params = self.build_expenses_query(user_id, year, month)
-            if not query:
-                logger.error("Invalid query parameters for fetch_user_expenses.")
-                return pd.DataFrame()
-
             with self.get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(query, params)
+                    cursor.execute(query)
                     data = cursor.fetchall()
-
-            if not data:
-                logger.info(f"No data available for user_id: {user_id}.")
-                return pd.DataFrame()
-            
-            df = pd.DataFrame(data, columns=['expense_date', 'category_name', 'amount_paid'])
-            df.dropna(subset=['category_name'], inplace=True)
-            df = df[df['category_name'] != 'Uncategorized']
-            return self.clean_data(df.sort_values(by='amount_paid', ascending=False).head(10))
-
+                    columns = [col[0] for col in cursor.description]  # Fetch column names dynamically
+            return pd.DataFrame(data, columns=columns)
         except Exception as e:
-            logger.error(f"Error fetching expenses: {e}")
+            logger.error(f"Error executing query: {e}")
             return pd.DataFrame()
 
-    def build_expenses_query(self, user_id, year, month):
-        """Construct the query based on input parameters for expenses."""
-        base_query = FETCH_ALL_EXPENSES_BASE_QUERY
+    def generate_expense_query(self, user_id='ALL Users', selected_year=None, selected_month=None):
+        """Generate SQL query for fetching user expenses dynamically."""
+        logger.debug("Generating expense query.")
         
-        where_clauses = []
-        params = []
-
-        # User filter
-        if user_id and user_id != "ALL Users":
-            where_clauses.append("e.user_id = %s")
-            params.append(user_id)
-
-        # Year filter (if year is provided)
-        if year:
-            where_clauses.append("YEAR(e.expense_date) = %s")
-            params.append(year)
-
-        # Month filter (if month is provided and year is also provided)
-        if month:
-            try:
-                if isinstance(month, str):
-                    month_number = list(calendar.month_name).index(month)
-                    if month_number == 0:
-                        raise ValueError(f"Invalid month name: {month}")
-                    month = month_number
-                where_clauses.append("MONTH(e.expense_date) = %s")
-                params.append(month)
-            except ValueError as e:
-                logger.error(f"Error: {e}")
-                return None, None
-
-        # Add where conditions if any
-        if where_clauses:
-            base_query += " WHERE " + " AND ".join(where_clauses)
-
-        base_query += """
-        ORDER BY amount_paid DESC
+        query = """
+        SELECT 
+            e.expense_date,
+            c.category_name,
+            s.subcategory_name,
+            e.amount_paid
+        FROM expenses e
+        JOIN categories c ON e.category_id = c.category_id
+        LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id AND s.category_id = c.category_id
+        WHERE e.amount_paid IS NOT NULL
+        AND e.category_id IS NOT NULL
+        AND (e.subcategory_id IS NOT NULL OR s.subcategory_name IS NULL)  -- Allow NULL subcategory_id or exclude NULL values
+        AND s.subcategory_name != 'Uncategorized'
         """
 
-        logger.debug(f"Constructed Query: {base_query}")
-        return base_query, params
-
-    def fetch_expenses_by_category(self, category_name):
-        """Fetch expenses for a specific category or all categories."""
-        try:
-            if category_name == "All Categories":
-                query = FETCH_ALL_EXPENSES_BY_ALL_CATEGORIES
-                params = ()
-            else:
-                query = FETCH_EXPENSES_BY_CATEGORY
-                params = (category_name,)
-
-            with self.get_db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, params)
-                    data = cursor.fetchall()
-
-            if not data:
-                logger.info(f"No data available for category: {category_name}.")
-                return pd.DataFrame()
-
-            df = pd.DataFrame(data, columns=['subcategory_name', 'total_amount'])
-            df.dropna(subset=['subcategory_name'], inplace=True)
-            df = df[df['subcategory_name'] != 'Uncategorized']
-            return self.clean_data(df)
-        except Exception as e:
-            logger.error(f"Error fetching expenses by category: {e}")
-            return pd.DataFrame()
-
-    def fetch_user_expenses_by_subcategory(self, user_id=None, year=None, month=None, selected_category=None):
-        """Fetch user expenses filtered by user, year, month, or category."""
-        try:
-            query, params = self.build_subcategory_query(user_id, year, month, selected_category)
-            if not query:
-                logger.error("Failed to build query for subcategory expenses.")
-                return pd.DataFrame()
-
-            with self.get_db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, params)
-                    data = cursor.fetchall()
-
-            if not data:
-                logger.info(f"No subcategory data available for '{selected_category}'.")
-                return pd.DataFrame()
-
-            df = pd.DataFrame(data, columns=['category_name', 'subcategory_name', 'total_amount'])
-            df.dropna(subset=['subcategory_name'], inplace=True)
-            df = df[df['subcategory_name'] != 'Uncategorized']
-            return self.clean_data(df.sort_values(by='total_amount', ascending=False).head(10))
-
-        except Exception as e:
-            logger.error(f"Error fetching expenses by subcategory: {e}")
-            return pd.DataFrame()
-
-    def build_subcategory_query(self, user_id, year, month, selected_category):
-        """Construct the query for subcategory expenses."""
-        base_query = FETCH_ALL_EXPENSES_BY_SUBCATEGORY_BASE_QUERY
+        # Add year filter if specified
+        if selected_year is not None:
+            query += f" AND YEAR(e.expense_date) = {selected_year}"
+            logger.debug(f"Adding year filter: {selected_year}")
         
-        where_clauses = []
-        params = []
-
-        # User filter
-        if user_id and user_id != "ALL Users":
-            where_clauses.append("e.user_id = %s")
-            params.append(user_id)
-
-        # Year filter (if year is provided)
-        if year:
-            where_clauses.append("YEAR(e.expense_date) = %s")
-            params.append(year)
-
-        # Month filter (if month is provided and year is also provided)
-        if month:
+        # Add month filter if specified
+        if selected_month is not None:
             try:
-                if isinstance(month, str):
-                    month_number = list(calendar.month_name).index(month)
-                    if month_number == 0:
-                        raise ValueError(f"Invalid month name: {month}")
-                    month = month_number
-                where_clauses.append("MONTH(e.expense_date) = %s")
-                params.append(month)
-            except ValueError as e:
-                logger.error(f"Error: {e}")
-                return None, None
+                month_numeric = list(calendar.month_name).index(selected_month)
+                if month_numeric > 0:  # Index 0 is an empty string, so we check > 0
+                    query += f" AND MONTH(e.expense_date) = {month_numeric}"
+                    logger.debug(f"Adding month filter: {selected_month} ({month_numeric})")
+                else:
+                    logger.warning(f"Invalid month name provided: {selected_month}")
+            except ValueError:
+                logger.warning(f"Invalid month name provided: {selected_month}")
 
-        # Category filter
-        if selected_category and selected_category != "All Categories":
-            where_clauses.append("c.category_name = %s")
-            params.append(selected_category)
+        
+        # Filter by user_id, or include all users if 'ALL Users' is specified
+        if user_id != 'ALL Users' and user_id is not None:
+            query += f" AND e.user_id = {user_id}"
+            logger.debug(f"Adding user filter: {user_id}")
+        
+        query += " ORDER BY c.category_name, s.subcategory_name, e.amount_paid DESC;"
 
-        # Exclude 'Uncategorized' and NULL subcategories
-        where_clauses.append("s.subcategory_name IS NOT NULL")
-        where_clauses.append("s.subcategory_name != 'Uncategorized'")
+        logger.debug(f"Generated query: {query}")
 
-        # Add where conditions if any
-        if where_clauses:
-            base_query += " WHERE " + " AND ".join(where_clauses)
+        # Execute the query and return the result as a DataFrame
+        return self.execute_query(query)
 
-        base_query += """
-        GROUP BY c.category_name, s.subcategory_name
-        ORDER BY total_amount DESC
-        """
-
-        logger.debug(f"Constructed Subcategory Query: {base_query}")
-        return base_query, params

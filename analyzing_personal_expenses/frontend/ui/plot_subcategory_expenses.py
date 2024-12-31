@@ -19,6 +19,7 @@ class PlotSubcategoryExpenses:
             selected_month (str): Selected month.
             category (str): Selected category.
         """
+        print("In PlotSubcategoryExpenses", df)
         try:
             if df.empty:
                 st.warning("No subcategory expenses found for the provided parameters.")
@@ -35,6 +36,8 @@ class PlotSubcategoryExpenses:
             # Restrict to Top 10 Subcategories by total_amount
             df = df.sort_values(by='total_amount', ascending=True).head(10)
             
+            print(f"Plotting subcategory expenses for {category} category.")
+
             # Plot Horizontal Bar Chart
             plot_horizontal_bar_chart(df, category)
         

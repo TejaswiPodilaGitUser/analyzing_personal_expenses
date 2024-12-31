@@ -13,7 +13,6 @@ from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar
 from frontend.ui.data_insights import get_insights
 from scripts.static_data import CHART_TYPES
-
 def main():
     """Main function to run the Expense Tracker Streamlit App."""
     st.set_page_config(layout="wide")
@@ -31,7 +30,7 @@ def main():
 
     # Fetch User Data for the year
     dv = DataVisualization(user_id=user_id)
-    df = dv.get_user_expenses(selected_year=selected_year, selected_month=selected_month)
+    df = dv.get_user_expenses(user_id=user_id, selected_year=selected_year, selected_month=selected_month)
 
     if df.empty:
         st.warning(MESSAGES["no_user_data"])
@@ -44,15 +43,15 @@ def main():
     # Initialize subcategory_df as an empty DataFrame
     subcategory_df = pd.DataFrame()
 
+    # Clean data: Ensure 'amount_paid' is numeric
+    df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+
     # Monthly Visualization
     if visualization_type == "Monthly":
         selected_year = selected_year or st.selectbox("Select Year", sorted(df['expense_year'].unique()), key="year")
         selected_month = selected_month or st.selectbox("Select Month", MONTHS, key="month")
-        
-        # Ensure filtering with month name (string)
-        filtered_df = df[(df['expense_month'] == selected_month) & (df['expense_year'] == int(selected_year))]
 
-        #print("Filtered_df :", filtered_df)
+        filtered_df = df[(df['expense_month'] == selected_month) & (df['expense_year'] == int(selected_year))]
 
         if filtered_df.empty:
             st.warning(MESSAGES["no_month_data"].format(month=selected_month, year=selected_year))
@@ -62,15 +61,14 @@ def main():
             
             with col1:
                 st.markdown("### 💰 Top 10 Spending Categories")
-                # Select only the relevant columns for display and remove date-related columns
-                # Aggregate amount_paid by category
-                top_10_df = (filtered_df
-                         .groupby('category_name', as_index=False)
-                         .agg(total_amount=('amount_paid', 'sum'))
-                         .nlargest(10, 'total_amount'))
-               # print("Top 10 df: ", top_10_df)
+                top_10_df = (filtered_df.groupby('category_name', as_index=False)
+                             .agg(total_amount=('amount_paid', 'sum')))
+
+                top_10_df['total_amount'] = pd.to_numeric(top_10_df['total_amount'], errors='coerce')
+                top_10_df = top_10_df.dropna(subset=['total_amount']).nlargest(10, 'total_amount')
+
                 st.dataframe(top_10_df)
-            
+
             with col2:
                 if chart_type in CHART_TYPES:
                     selected_month_name = selected_month
@@ -90,70 +88,38 @@ def main():
         else:
             st.markdown(f"## 📊 Yearly Expenses Overview for {selected_year}")
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 st.markdown("### 💰 Top 10 Yearly Expenses")
-                # Select only the relevant columns for display and remove date-related columns
-                # Aggregate amount_paid by category
-                top_10_df = (filtered_df
-                         .groupby('category_name', as_index=False)
-                         .agg(total_amount=('amount_paid', 'sum'))
-                         .nlargest(10, 'total_amount'))
+                top_10_df = (filtered_df.groupby('category_name', as_index=False)
+                             .agg(total_amount=('amount_paid', 'sum')))
+
+                top_10_df['total_amount'] = pd.to_numeric(top_10_df['total_amount'], errors='coerce')
+                top_10_df = top_10_df.dropna(subset=['total_amount']).nlargest(10, 'total_amount')
+
                 st.dataframe(top_10_df)
-            
+
             with col2:
                 dv.display_yearly_expenses(filtered_df, selected_year, chart_type)
             
             insights = get_insights(filtered_df, selected_year)
 
-    # Sub Category Bar chart if a category is selected
     # Subcategory Visualization
     # Subcategory Visualization for selected category from dropdown
+    # Subcategory Visualization
     if detailed_view_category:
-        print("In main.py- detailed_view_category ", detailed_view_category)
-        print("In main.py- top_10_df ", top_10_df)
-
-        # Create a dropdown to select a category from all available categories
-        available_categories = top_10_df['category_name'].unique().tolist()  # Or fetch from all categories
-        
-        # If detailed_view_category is not set, default to "All Categories"
+        # Ensure detailed_view_category is set to either the selected category or 'All Categories'
         selected_category = detailed_view_category if detailed_view_category else "All Categories"
 
-        print("In main.py- selected_category ", selected_category)
-        print("In main.py- available_categories ", available_categories)
-
-        # If category is "All Categories", fetch data for all categories
-        # Fetch subcategory data for a specific category and year/month
-        # Ensure subcategory_df is fetched with proper filters
-        # Fetch updated subcategory data
+        # Fetch subcategory data for the selected category or all categories
         subcategory_df = dv.get_user_expenses_by_subcategory(
+            df,
             user_id=user_id,
             selected_year=selected_year,
             selected_month=selected_month,
             category=selected_category
         )
 
-        # Check structure
-        print("Subcategory DataFrame Columns:", subcategory_df.columns)
-        print("Subcategory DataFrame Head:", subcategory_df.head())
-
-        # Validate category totals
-        if 'category_name' in subcategory_df.columns and 'total_amount' in subcategory_df.columns:
-            subcategory_totals = subcategory_df.groupby('category_name')['total_amount'].sum().reset_index()
-            top_10_totals = top_10_df.groupby('category_name')['total_amount'].sum().reset_index()
-            
-            print("Validating Totals Between Subcategory and Top 10 DataFrames")
-            print("Subcategory Totals:\n", subcategory_totals)
-            print("Top 10 Totals:\n", top_10_totals)
-            
-            if not subcategory_totals.equals(top_10_totals):
-                print("🚨 **Discrepancy Detected! Totals do not match.**")
-            else:
-                print("✅ **Totals Match Successfully!**")
-        else:
-            print("⚠️ **Required columns are missing in subcategory_df or top_10_df.**")
-
-        # Display Subcategory Data
         if not subcategory_df.empty:
             st.markdown(f"### 📊 Subcategory Expenses Overview for {selected_category}")
             col1, col2 = st.columns([1, 1])
@@ -176,7 +142,6 @@ def main():
     if not insights:
         st.warning(MESSAGES["no_insights"])
     else:
-        # Ensure max_amount and min_amount are numeric
         max_amount = insights.get('max_amount', 0.0)
         min_amount = insights.get('min_amount', 0.0)
 
@@ -189,8 +154,8 @@ def main():
             <div style="text-align: center;">
                 <p><strong>▲ Max Spending:</strong> {insights.get('max_category', 'N/A')} (${max_amount:.2f})</p>
                 <p><strong>▼ Min Spending:</strong> {insights.get('min_category', 'N/A')} (${min_amount:.2f})</p>
-    </div>
-""", unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
