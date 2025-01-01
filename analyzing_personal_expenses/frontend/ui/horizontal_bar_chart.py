@@ -18,8 +18,13 @@ def plot_horizontal_bar_chart(data: pd.DataFrame, category_name: str):
     # Calculate the number of subcategories
     num_subcategories = len(data)
     
-    # Adjust the width of bars based on the number of subcategories
-    bar_width = 0.2 if num_subcategories < 4 else 0.5  # Decrease bar width for larger number of bars
+    # Adjust bar width based on the number of subcategories
+    if num_subcategories == 1:
+        bar_width = 0.1  # Very thin bar for a single subcategory
+    elif num_subcategories < 4:
+        bar_width = 0.3  # Thin bars for a few subcategories
+    else:
+        bar_width = 0.5  # Wider bars for many subcategories
 
     # Set the figure size
     plt.figure(figsize=(6, 4))

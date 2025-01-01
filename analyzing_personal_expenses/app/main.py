@@ -56,11 +56,11 @@ def main():
         if filtered_df.empty:
             st.warning(MESSAGES["no_month_data"].format(month=selected_month, year=selected_year))
         else:
-            st.markdown(f"## 📊 Monthly Expenses Overview for {selected_month} {selected_year}")
+            st.markdown(f"### 📊 Monthly Expenses Overview for {selected_month} {selected_year}")
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### 💰 Top 10 Spending Categories")
+                st.markdown("#### 💰 Top 10 Spending Categories")
                 top_10_df = (filtered_df.groupby('category_name', as_index=False)
                              .agg(total_amount=('amount_paid', 'sum')))
 
@@ -86,11 +86,11 @@ def main():
         if filtered_df.empty:
             st.warning(MESSAGES["no_year_data"].format(year=selected_year))
         else:
-            st.markdown(f"## 📊 Yearly Expenses Overview for {selected_year}")
+            st.markdown(f"### 📊 Yearly Expenses Overview for {selected_year}")
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("### 💰 Top 10 Yearly Expenses")
+                st.markdown("#### 💰 Top 10 Yearly Expenses")
                 top_10_df = (filtered_df.groupby('category_name', as_index=False)
                              .agg(total_amount=('amount_paid', 'sum')))
 
@@ -104,10 +104,11 @@ def main():
             
             insights = get_insights(filtered_df, selected_year)
 
-    # Subcategory Visualization
+
     # Subcategory Visualization for selected category from dropdown
     # Subcategory Visualization
     if detailed_view_category:
+        st.markdown("---")
         # Ensure detailed_view_category is set to either the selected category or 'All Categories'
         selected_category = detailed_view_category if detailed_view_category else "All Categories"
 
@@ -121,7 +122,7 @@ def main():
         )
 
         if not subcategory_df.empty:
-            st.markdown(f"### 📊 Subcategory Expenses Overview for {selected_category}")
+            st.markdown(f"#### 📊 Subcategory Expenses Overview for {selected_category}")
             col1, spacer,col2 = st.columns([2,0.5, 1])
             with col1:
                 dv.display_subcategory_expenses(subcategory_df, selected_year, selected_month, selected_category)

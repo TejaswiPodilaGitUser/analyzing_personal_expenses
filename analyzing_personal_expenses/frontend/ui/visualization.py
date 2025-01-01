@@ -31,7 +31,7 @@ class Visualization:
             # Titles on the same line
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown(f"### 💰 Top 10 Spending Categories for {selected_month}")
+                st.markdown(f"#### 💰 Top 10 Spending Categories for {selected_month}")
             with col2:
                 st.markdown(f"### Top Spending Categories For {selected_month}")
             
@@ -65,9 +65,9 @@ class Visualization:
             # Titles on the same line
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 💰 Top 10 Yearly Expenses")
+                st.markdown("#### 💰 Top 10 Yearly Expenses")
             with col2:
-                st.markdown("### Annual Top 10 Spending Categories")
+                st.markdown("#### Annual Top 10 Spending Categories")
             
             # Display data and chart side by side
             col1, col2 = st.columns(2)

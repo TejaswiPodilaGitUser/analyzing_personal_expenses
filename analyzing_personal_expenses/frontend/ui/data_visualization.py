@@ -120,7 +120,7 @@ class DataVisualization:
 
             # Check if the aggregation is successful
             if subcategory_df.empty or 'total_amount' not in subcategory_df.columns:
-                st.warning("No valid subcategory data available after aggregation.")
+               # st.warning("No valid subcategory data available after aggregation.")
                 return pd.DataFrame()
 
             return subcategory_df
