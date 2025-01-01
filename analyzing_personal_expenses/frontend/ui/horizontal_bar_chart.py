@@ -29,17 +29,20 @@ def plot_horizontal_bar_chart(data: pd.DataFrame, category_name: str):
     # Set the figure size
     plt.figure(figsize=(6, 4))
 
-    # Plot the data with adjusted bar width
-    data.set_index('subcategory_name')['total_amount'].plot(kind='barh', color='skyblue', width=bar_width)
+    # Plot the data with default colors and adjusted bar width
+    data.set_index('subcategory_name')['total_amount'].plot(
+        kind='barh', 
+        width=bar_width
+    )
 
     # Add labels to bars with smaller font size
     for index, value in enumerate(data['total_amount']):
-        plt.text(value, index, f"${value:.2f}", va='center')  # Smaller font for text
+        plt.text(value, index, f"${value:.2f}", va='center', fontsize=8)
 
     # Title and labels with smaller font sizes
-   # plt.title(f"Top Subcategory Breakdown - {category_name}", fontsize=10)  # Smaller title font
-    plt.xlabel('Total Amount', fontweight='bold')  # Smaller xlabel font
-    plt.ylabel('Subcategory', fontweight='bold')  # Smaller ylabel font
+    #plt.title(f"Top Subcategory Breakdown - {category_name}", fontsize=12, fontweight='bold')
+    plt.xlabel('Total Amount', fontsize=10, fontweight='bold')
+    plt.ylabel('Subcategory', fontsize=10, fontweight='bold')
 
     # Adjust the layout and make it tight
     plt.tight_layout()
