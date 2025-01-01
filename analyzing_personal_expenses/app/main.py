@@ -122,7 +122,7 @@ def main():
 
         if not subcategory_df.empty:
             st.markdown(f"### 📊 Subcategory Expenses Overview for {selected_category}")
-            col1, col2 = st.columns([1, 1])
+            col1, spacer,col2 = st.columns([2,0.5, 1])
             with col1:
                 dv.display_subcategory_expenses(subcategory_df, selected_year, selected_month, selected_category)
             with col2:

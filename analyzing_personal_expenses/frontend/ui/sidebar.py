@@ -101,5 +101,5 @@ def select_category(user_id: Optional[int]) -> Optional[str]:
             st.session_state['detailed_view_category'] = category_name
             return category_name
         except Exception as e:
-            st.sidebar.error(f"Error fetching categories: {e}")
+            st.sidebar.error("Error fetching categories.No categories available.")
             return None

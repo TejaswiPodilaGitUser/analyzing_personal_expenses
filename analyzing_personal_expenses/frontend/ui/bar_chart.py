@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import numpy as np
 
-def plot_bar_chart(data, xlabel, ylabel, title, chart_size=(8, 6)):
+def plot_bar_chart(data, xlabel, ylabel, title, chart_size=(6, 4)):
     """Plot a bar chart with consistent bar width for wide layouts and fewer bars."""
     
     fig, ax = plt.subplots(figsize=chart_size)

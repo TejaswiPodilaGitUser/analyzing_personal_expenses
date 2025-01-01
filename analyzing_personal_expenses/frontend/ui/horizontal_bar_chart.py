@@ -22,7 +22,7 @@ def plot_horizontal_bar_chart(data: pd.DataFrame, category_name: str):
     bar_width = 0.2 if num_subcategories < 4 else 0.5  # Decrease bar width for larger number of bars
 
     # Set the figure size
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(6, 4))
 
     # Plot the data with adjusted bar width
     data.set_index('subcategory_name')['total_amount'].plot(kind='barh', color='skyblue', width=bar_width)
