@@ -7,7 +7,7 @@ from frontend.ui.plot_yearly_expenses import PlotYearlyExpenses
 from frontend.ui.plot_subcategory_expenses import PlotSubcategoryExpenses
 from frontend.ui.plot_data_insights import PlotDataInsights
 from backend.database.db_operations import DatabaseOperations
-from frontend.ui.horizontal_bar_chart import plot_horizontal_bar_chart
+#from frontend.ui.horizontal_bar_chart import plot_horizontal_bar_chart
 
 
 class DataVisualization:
@@ -21,14 +21,14 @@ class DataVisualization:
 
     def get_user_expenses(self, user_id='ALL Users', selected_year=None, selected_month=None):
         """Fetch user expenses."""
-        print("In data visualization", user_id, selected_year, selected_month)
+
         try:
             df = self.db_ops.generate_expense_query(
                 user_id=self.user_id,
                 selected_year=selected_year,
                 selected_month=selected_month
             )
-            
+
             if df.empty:
                 raise ValueError("No expenses found for the selected user and period.")
             return df
@@ -51,10 +51,10 @@ class DataVisualization:
     def get_top_spending_categories(self, df, selected_year=None, selected_month=None):
         """Get the top 10 spending categories filtered by year and month."""
         if df.empty:
-            return pd.DataFrame(columns=['category_name', 'amount_paid'])
+            return pd.DataFrame(columns=['category_name', 'total_amount'])
 
-        df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-        df = df.dropna(subset=['amount_paid'])
+        df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
+        df = df.dropna(subset=['total_amount'])
 
         if df.empty:
             st.warning("No valid data after cleaning.")
@@ -72,7 +72,7 @@ class DataVisualization:
         else:
             filtered_df = df
 
-        return filtered_df.groupby('category_name')['amount_paid'].sum().nlargest(10).reset_index()
+        return filtered_df.groupby('category_name')['total_amount'].sum().nlargest(10).reset_index()
     
     def get_user_expenses_by_subcategory(self, df, user_id=None, selected_year=None, selected_month=None, category=None):
         """
@@ -83,16 +83,13 @@ class DataVisualization:
                 st.warning("No data available for the selected filters.")
                 return pd.DataFrame()
 
-            # Ensure that 'amount_paid' is numeric
+            # Ensure that 'total_amount' is numeric
             if 'amount_paid' not in df.columns:
                 st.warning("'amount_paid' column is missing from the data.")
                 return pd.DataFrame()
 
-            df['amount_paid'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-            df = df.dropna(subset=['amount_paid'])  # Drop rows where 'amount_paid' is NaN
-
-            print("Filtered and cleaned data before aggregation:")
-            print(df.head())
+            df['total_amount'] = pd.to_numeric(df['amount_paid'], errors='coerce')
+            df = df.dropna(subset=['total_amount'])  # Drop rows where 'total_amount' is NaN
 
             if df.empty:
                 st.warning("No valid data available after cleaning.")
@@ -116,21 +113,15 @@ class DataVisualization:
             if category and category != "All Categories":
                 df = df[df['category_name'] == category]
 
-            print("Data before aggregation:")
-            print(df.head())
-
             # Aggregate by 'subcategory_name' using 'total_amount'
             subcategory_df = df.groupby('subcategory_name', as_index=False).agg(
-                total_amount=('amount_paid', 'sum')
+                total_amount=('total_amount', 'sum')
             )
 
             # Check if the aggregation is successful
             if subcategory_df.empty or 'total_amount' not in subcategory_df.columns:
                 st.warning("No valid subcategory data available after aggregation.")
                 return pd.DataFrame()
-
-            print("Subcategory DataFrame after aggregation:")
-            print(subcategory_df.head())
 
             return subcategory_df
 
@@ -147,14 +138,7 @@ class DataVisualization:
             return
 
         try:
-            subcategory_df = self.get_user_expenses_by_subcategory(
-                df,
-                selected_year=selected_year,
-                selected_month=selected_month,
-                category=category
-            )
-
-            print("3. In data_visualization.....Subcategory DataFrame:", subcategory_df)
+            subcategory_df = df;
 
             if not subcategory_df.empty:
                 # Use fetch_and_plot to display the subcategory chart

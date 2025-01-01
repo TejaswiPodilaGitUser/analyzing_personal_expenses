@@ -90,7 +90,7 @@ def select_category(user_id: Optional[int]) -> Optional[str]:
     if st.session_state['show_detailed_view']:
         db_ops = DatabaseOperations()
         try:
-            print("Fetching categories...user_id:", user_id)
+            
             # Add All Categories to the list of categories
             categories = db_ops.fetch_user_categories(user_id) if user_id is not None else db_ops.fetch_all_categories()
             categories.insert(0, "All Categories")
