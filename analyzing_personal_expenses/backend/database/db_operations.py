@@ -45,7 +45,43 @@ class DatabaseOperations:
         data = cursor.fetchall()
         conn.close()
 
-        return pd.DataFrame(data, columns=['expense_date', 'category_name', 'amount_paid'])
+    def fetch_user_categories(self, user_id='ALL Users', selected_year=None, selected_month=None):
+            """Fetch distinct expense categories for a specific user or all users."""
+            query = FETCH_USER_CATEGORIES
+            
+            # Add year filter if specified
+            if selected_year is not None:
+                query += f" AND YEAR(e.expense_date) = {selected_year}"
+                logger.debug(f"Adding year filter: {selected_year}")
+            
+            # Add month filter if specified
+            if selected_month is not None:
+                try:
+                    month_numeric = list(calendar.month_name).index(selected_month)
+                    if month_numeric > 0:  # Ensure valid month
+                        query += f" AND MONTH(e.expense_date) = {month_numeric}"
+                        logger.debug(f"Adding month filter: {selected_month} ({month_numeric})")
+                    else:
+                        logger.warning(f"Invalid month name provided: {selected_month}")
+                except ValueError:
+                    logger.warning(f"Invalid month name provided: {selected_month}")
+            
+            # Add user filter if specified
+            if user_id != 'ALL Users' and user_id is not None:
+                query += f" AND e.user_id = '{user_id}'"
+                logger.debug(f"Adding user filter: {user_id}")
+            
+            query += " ORDER BY c.category_name;"
+            logger.debug(f"Generated query: {query}")
+            
+            # Execute the query and return results
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(query)
+            data = cursor.fetchall()
+            conn.close()
+            
+            return pd.DataFrame(data, columns=['category_name'])
 
     def fetch_users(self):
         """Fetch all users from the database."""
@@ -90,20 +126,7 @@ class DatabaseOperations:
         """Generate SQL query for fetching user expenses dynamically."""
         logger.debug("Generating expense query.")
         
-        query = """
-        SELECT 
-            e.expense_date,
-            c.category_name,
-            s.subcategory_name,
-            e.amount_paid
-        FROM expenses e
-        JOIN categories c ON e.category_id = c.category_id
-        LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id AND s.category_id = c.category_id
-        WHERE e.amount_paid IS NOT NULL
-        AND e.category_id IS NOT NULL
-        AND (e.subcategory_id IS NOT NULL OR s.subcategory_name IS NULL)  -- Allow NULL subcategory_id or exclude NULL values
-        AND s.subcategory_name != 'Uncategorized'
-        """
+        query = FETCH_USER_EXPENSES_BASE_QUERY
 
         # Add year filter if specified
         if selected_year is not None:
