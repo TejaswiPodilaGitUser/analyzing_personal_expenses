@@ -16,6 +16,18 @@ def populate_users(get_db_connection):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Check if any of the usernames already exist
+    existing_usernames = set()
+    cursor.execute("SELECT user_name FROM users WHERE user_name IN (%s, %s, %s, %s)", ("user1", "user2", "user3", "user4"))
+    for (username,) in cursor.fetchall():
+        existing_usernames.add(username)
+    
+    if existing_usernames:
+        print(f"⚠️ The following users already exist: {', '.join(existing_usernames)}. Aborting insertion.")
+        cursor.close()
+        conn.close()
+        return
+
     users = [
         ("user1", "user1@example.com", "user1_password", "user"),
         ("user2", "user2@example.com", "user2_password", "user"),

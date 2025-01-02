@@ -24,3 +24,5 @@ MESSAGES = {
     "no_subcategory_data": "No data available for the selected subcategory: {category}."
 
 }
+
+CHARTTYPE={"Pie", "Bar", "Scatter", "Line", "Donut"}

@@ -4,7 +4,7 @@ import mysql.connector
 from faker import Faker
 from populate_expenses import populate_expenses
 from static_data import CATEGORIES, PAYMENT_MODES, CATEGORY_DESCRIPTIONS
-from users_population import populate_users  # Moved populate_users here
+from populate_users import populate_users  # Moved populate_users here
 
 # Load environment variables from .env
 load_dotenv()

@@ -28,4 +28,4 @@ CATEGORY_DESCRIPTIONS = {
     'School Fees': ['Tuition Fees', 'Books & Stationary', 'School Fees', 'Trips']
 }
 
-CHART_TYPES= {'Bar', 'Pie', 'Line', 'Scatter','Donut'}
+CHART_TYPES= {'Bar', 'Pie','Donut','Line', 'Scatter'}

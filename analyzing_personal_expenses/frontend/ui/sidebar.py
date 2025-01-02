@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.static_expense_data import MONTHS, YEARS
+from utils.static_expense_data import MONTHS, YEARS, CHARTTYPE
 from backend.database.db_operations import DatabaseOperations
 from typing import Dict, Tuple, Optional
 
@@ -73,9 +73,12 @@ def select_month() -> Optional[str]:
 
 def select_chart_type() -> str:
     """
-    Display chart type dropdown in the sidebar.
+    Display chart type dropdown in the sidebar with 'Pie' as the default.
     """
-    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line", "Donut"], index=0)
+    chart_types = list(CHARTTYPE)  # Convert set to list
+    default_index = chart_types.index("Pie") if "Pie" in chart_types else 0
+    return st.sidebar.selectbox("Chart Type", chart_types, index=default_index)
+
 
 
 def select_category(user_id: Optional[int], selected_year: Optional[str], selected_month: Optional[str]) -> Optional[str]:
