@@ -16,7 +16,8 @@ JOIN categories c ON e.category_id = c.category_id
 WHERE e.user_id = %s
 """
 
-FETCH_USER_CATEGORIES="""
+# To fetch all Categories for a user in a specific year
+FETCH_USER_CATEGORIES = """
 SELECT DISTINCT c.category_name
 FROM expenses e
 JOIN categories c ON e.category_id = c.category_id

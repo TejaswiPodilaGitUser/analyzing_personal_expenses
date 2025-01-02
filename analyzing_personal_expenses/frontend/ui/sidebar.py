@@ -3,6 +3,7 @@ from utils.static_expense_data import MONTHS, YEARS
 from backend.database.db_operations import DatabaseOperations
 from typing import Dict, Tuple, Optional
 
+
 def display_sidebar(users: Dict[str, int]) -> Tuple[Optional[int], str, str, Optional[str], Optional[str], Optional[str]]:
     """
     Display the sidebar with user filters and return selected values.
@@ -30,7 +31,7 @@ def display_sidebar(users: Dict[str, int]) -> Tuple[Optional[int], str, str, Opt
     chart_type = select_chart_type()
 
     # Select category for detailed view (if detailed view is enabled)
-    detailed_view_category = select_category(user_id)
+    detailed_view_category = select_category(user_id, selected_year, selected_month)
 
     return user_id, visualization_type, chart_type, selected_month, selected_year, detailed_view_category
 
@@ -49,12 +50,12 @@ def select_visualization_type() -> str:
     """
     return st.sidebar.radio("Analysis Period", ["Yearly", "Monthly"], index=0)
 
+
 def select_year() -> Optional[str]:
     """
     Display year selection dropdown in the sidebar with 2024 as the default year.
     """
     if YEARS:
-        # Ensure that 2024 is selected by default, or fallback to the first year if not available
         default_year = "2024"
         index = YEARS.index(default_year) if default_year in YEARS else 0
         return st.sidebar.selectbox("Select Year", YEARS, index=index)
@@ -62,7 +63,7 @@ def select_year() -> Optional[str]:
         st.sidebar.warning("No years available in the database.")
         return None
 
-        
+
 def select_month() -> Optional[str]:
     """
     Display month selection dropdown in the sidebar.
@@ -74,10 +75,10 @@ def select_chart_type() -> str:
     """
     Display chart type dropdown in the sidebar.
     """
-    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line","Donut"], index=0)
+    return st.sidebar.selectbox("Chart Type", ["Pie", "Bar", "Scatter", "Line", "Donut"], index=0)
 
 
-def select_category(user_id: Optional[int]) -> Optional[str]:
+def select_category(user_id: Optional[int], selected_year: Optional[str], selected_month: Optional[str]) -> Optional[str]:
     """
     Display category selection dropdown in the sidebar only after clicking 'More Detailed View'.
     """
@@ -90,16 +91,29 @@ def select_category(user_id: Optional[int]) -> Optional[str]:
     if st.session_state['show_detailed_view']:
         db_ops = DatabaseOperations()
         try:
+            # Fetch categories based on user_id, year, and month if applicable
+            categories_df = db_ops.fetch_user_categories(user_id, selected_year, selected_month)
+
+            # Debug: Show columns to verify structure
+           # st.sidebar.write("Category DataFrame Columns:", categories_df.columns.tolist())
+
+            if not categories_df.empty and 'category_name' in categories_df.columns:
+                categories = ["All Categories"] + categories_df['category_name'].tolist()
+            else:
+                #st.sidebar.warning("No valid categories found. Fetching all categories as fallback.")
+                categories_df = db_ops.fetch_all_categories()
+                if not categories_df.empty and 'category_name' in categories_df.columns:
+                    categories = ["All Categories"] + categories_df['category_name'].tolist()
+                else:
+                    categories = ["All Categories"]
             
-            # Add All Categories to the list of categories
-            categories = db_ops.fetch_user_categories(user_id) if user_id is not None else db_ops.fetch_all_categories()
-            categories.insert(0, "All Categories")
-            if not categories:
-                st.sidebar.warning("No categories available.")
-                return None
+            # Select category from the dropdown
             category_name = st.sidebar.selectbox("Select Category", categories)
             st.session_state['detailed_view_category'] = category_name
             return category_name
+
         except Exception as e:
-            st.sidebar.error("Error fetching categories.No categories available.")
+            st.sidebar.warning("No valid categories found")
             return None
+
+    return None
