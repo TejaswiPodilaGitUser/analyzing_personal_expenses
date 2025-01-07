@@ -36,3 +36,21 @@ FROM subcategories s
 JOIN expenses e ON s.subcategory_id = e.subcategory_id
 WHERE 1=1
 """
+
+
+# Query to fetch count of payment modes for selected user, year, month, and category
+FETCH_PAYMENT_MODE_COUNT_QUERY = """
+SELECT
+    e.expense_date,
+    c.category_name,
+    pm.payment_mode_name, 
+    e.payment_mode_id AS payment_count
+FROM 
+    expenses e
+JOIN 
+    payment_modes pm ON e.payment_mode_id = pm.payment_mode_id
+JOIN 
+    categories c ON e.category_id = c.category_id
+WHERE 
+    1=1
+"""

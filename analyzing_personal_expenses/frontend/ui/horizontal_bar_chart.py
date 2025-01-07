@@ -41,7 +41,7 @@ def plot_horizontal_bar_chart(data: pd.DataFrame, category_name: str):
 
     # Title and labels with smaller font sizes
     #plt.title(f"Top Subcategory Breakdown - {category_name}", fontsize=12, fontweight='bold')
-    plt.xlabel('Total Amount', fontsize=10, fontweight='bold')
+    plt.xlabel('Total Amount', fontsize=10, fontweight='bold') #rotation=20
     plt.ylabel('Subcategory', fontsize=10, fontweight='bold')
     
     # Adjust margins to ensure text fits

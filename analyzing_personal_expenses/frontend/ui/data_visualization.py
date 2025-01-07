@@ -17,7 +17,7 @@ class DataVisualization:
         self.plot_yearly = PlotYearlyExpenses()
         self.plot_subcategory = PlotSubcategoryExpenses()
         self.plot_insights = PlotDataInsights()
-        
+    
         # Data cleaning is handled here only if df is provided
         if df is not None:
             self.data_cleaner = DataCleaner(df)
@@ -144,3 +144,35 @@ class DataVisualization:
                 st.warning("No valid subcategory data available to display.")
         except Exception as e:
             st.error(f"Error displaying subcategory expenses: {e}")
+
+
+    def get_payment_mode_count(self, df, selected_year=None, selected_month=None, category=None):
+        """Fetch the count of different payment modes."""
+        try:
+            # Clean the data
+            df['payment_mode_name'] = df['payment_mode_name'].str.strip()
+
+            # Filter by selected year and month if provided
+            if selected_year or selected_month:
+                df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
+                df['expense_year'] = df['expense_date'].dt.year
+                df['expense_month'] = df['expense_date'].dt.strftime('%B')
+
+            if selected_year and selected_month:
+                df = df[
+                    (df['expense_year'] == int(selected_year)) &
+                    (df['expense_month'].str.lower() == selected_month.lower())
+                ]
+
+            if category and category != "All Categories":
+                category = category.strip().lower()
+                df = df[df['category_name'].str.strip().str.lower() == category]
+
+            # Group by 'payment_mode' and count occurrences
+            payment_mode_count = df['payment_mode_name'].value_counts().reset_index()
+            payment_mode_count.columns = ['payment_mode_name', 'count']
+
+            return payment_mode_count
+        except Exception as e:
+            print(f"Error fetching payment mode count: {e}")
+            return pd.DataFrame()

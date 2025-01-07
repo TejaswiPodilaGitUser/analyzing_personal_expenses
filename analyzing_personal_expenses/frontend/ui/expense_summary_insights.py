@@ -15,8 +15,8 @@ class ExpenseSummaryInsights:
         """Display the expense summary (max/min spending) with centered alignment."""
         st.markdown("---")
         st.markdown(f"""
-        <div style="text-align: center; margin-top: 20px;">
-            <h3>Expense Summary Insights</h3>
+        <div style="text-align: center; margin-top: 2px;">
+            <h3>Expense Summary Data Insights</h3>
         </div>
         """, unsafe_allow_html=True)
 

@@ -4,6 +4,7 @@ class DataCleaner:
         self.categories_df = categories_df
         self.subcategories_df = subcategories_df
 
+
     def fill_missing_subcategory_name(self):
         """Fills missing 'subcategory_name' with the mode (most frequent value) of the respective category."""
         # Fill missing subcategory_name using the mode (most frequent value) per category
@@ -57,3 +58,4 @@ class DataCleaner:
         self.fill_missing_subcategory_id()  # Fill missing subcategory_id based on subcategory_name
         
         return self.df
+

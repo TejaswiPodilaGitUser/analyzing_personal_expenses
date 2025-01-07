@@ -153,7 +153,6 @@ class DatabaseOperations:
 
         query += " ORDER BY c.category_name, s.subcategory_name, e.amount_paid DESC;"
         logger.debug(f"Generated query: {query}")
-        
         return self.execute_query(query)
     
 
@@ -235,4 +234,44 @@ class DatabaseOperations:
                     return pd.DataFrame(subcategories, columns=['subcategory_id', 'subcategory_name'])
         except Exception as e:
             logger.error(f"Error fetching subcategories: {e}")
+            return pd.DataFrame()
+        
+    def fetch_payment_mode_counts(self, user_id='ALL Users', selected_year=None, selected_month=None, category_id=None):
+        """
+        Fetch count of payment modes used for selected user, year, month, and category.
+        """
+        query = FETCH_PAYMENT_MODE_COUNT_QUERY
+
+        # Filter by user
+        if user_id != 'ALL Users' and user_id is not None:
+            query += f" AND e.user_id = '{user_id}'"
+
+        # Filter by year
+        if selected_year is not None:
+            query += f" AND YEAR(e.expense_date) = {selected_year}"
+
+        # Filter by month
+        if selected_month is not None:
+            try:
+                month_numeric = list(calendar.month_name).index(selected_month)
+                query += f" AND MONTH(e.expense_date) = {month_numeric}"
+            except ValueError:
+                logger.warning(f"Invalid month name provided: {selected_month}")
+
+        # Filter by category
+        if category_id is not None:
+            query += f" AND e.category_id = {category_id}"
+
+        #query += " GROUP BY c.category_name,pm.payment_mode_name ORDER BY payment_count DESC;"
+        logger.debug(f"Generated fetch_payment_mode_counts query: {query}")
+
+
+        try:
+            with self.get_db_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    payment_modes = cursor.fetchall()
+                    return pd.DataFrame(payment_modes, columns=['expense_date','category_name','payment_mode_name', 'payment_count'])
+        except Exception as e:
+            logger.error(f"Error fetching payment mode counts: {e}")
             return pd.DataFrame()
