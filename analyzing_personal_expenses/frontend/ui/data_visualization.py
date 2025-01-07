@@ -87,9 +87,10 @@ class DataVisualization:
                 st.warning("'amount_paid' column is missing from the data.")
                 return pd.DataFrame()
 
-            # Normalize the 'total_amount' to handle any missing or malformed data
-            df['total_amount'] = pd.to_numeric(df['amount_paid'], errors='coerce').fillna(df['amount_paid'].mean())
+            # Normalize the 'total_amount'
+            df['total_amount'] = pd.to_numeric(df['amount_paid'], errors='coerce').fillna(0)
 
+            # Filter by year and month if provided
             if selected_year or selected_month:
                 if 'expense_date' in df.columns:
                     df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
@@ -102,19 +103,15 @@ class DataVisualization:
                     (df['expense_month'].str.lower() == selected_month.lower())
                 ]
 
+            # Apply category filter only if a specific category is selected
             if category and category != "All Categories":
-                # Normalize both category names to lowercase to avoid case-sensitivity issues
                 category = category.strip().lower()
                 df = df[df['category_name'].str.strip().str.lower() == category]
 
-            # Now, let's sum the amounts grouped by 'subcategory_name' (and any filters applied)
+            # Group by 'subcategory_name' and sum 'total_amount'
             subcategory_df = df.groupby('subcategory_name', as_index=False).agg(
                 total_amount=('total_amount', 'sum')
             )
-
-            # Check if the subcategory totals are matching expected values
-            # st.write("Aggregated Subcategory Data:", subcategory_df)
-            
             return subcategory_df
 
         except Exception as e:

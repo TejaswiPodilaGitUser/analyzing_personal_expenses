@@ -8,7 +8,6 @@ import decimal
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from frontend.ui.data_visualization import DataVisualization
-from frontend.ui.export_data import ExportData
 from backend.database.db_operations import DatabaseOperations
 from utils.static_expense_data import MONTHS, MESSAGES
 import frontend.ui.sidebar as sidebar

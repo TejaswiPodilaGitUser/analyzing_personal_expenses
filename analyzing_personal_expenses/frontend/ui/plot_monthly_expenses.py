@@ -60,7 +60,7 @@ class PlotMonthlyExpenses:
             return None
 
         # Dynamically set the report title
-        st.markdown(f"####        📊 Data visualization for {selected_month} {selected_year}")
+        st.markdown(f"<h4 style='text-align: center;'>💵 Top Spending categories for {selected_month} {selected_year}</h4>", unsafe_allow_html=True)
 
         # Plot the chart based on selected chart type
         if chart_type.lower() == "bar":

@@ -58,7 +58,12 @@ class PlotYearlyExpenses:
             return None
 
         # Dynamically set the report title
-        st.markdown(f"#### 📅 Yearly Expenses for {selected_year}")
+        st.markdown(f"""
+                <div style="text-align: center;">
+                    <h4>📅 For year {selected_year} High-Spending Categories 💰</h4>
+                </div>
+            """, unsafe_allow_html=True)
+
 
         # Plot the chart based on selected chart type
         if chart_type.lower() == "bar":

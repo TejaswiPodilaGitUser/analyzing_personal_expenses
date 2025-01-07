@@ -44,7 +44,7 @@ pip install fpdf
 pip install bcrypt
 ```
 
-## 📊 Database Setup
+## 🔧 Database Setup
 
 ### 1. Configure Database Credentials
 Create a `.env` file in the project root and add the following details:
@@ -70,22 +70,35 @@ If any issues are faced while connecting to the database:
 - Check if the MySQL user has the required privileges.
 - Review MySQL error logs for more details.
 
-### 3. Create Database Tables
+"""
+# 📚 Data Generation
+
+In this project, we use both **Faker** and **Random** libraries for data generation:
+
+- **Faker:** Used to generate **realistic, human-like fake data** such as names, emails, and dates.
+- **Random:** Used to generate **random numerical values**, **random selections from lists**, and **controlled randomness** 
+  for numeric fields like `amount_paid` and random `IDs`.
+
+---
+
+## ⚙️ Steps to Populate data into the Database
+
+### 1. Create Database Tables
 ```bash
 python scripts/create_tables.py
 ```
 
-### 4. Populate Data in all tables
+### 2. Populate Data in all tables
 ```bash
 python scripts/populate_data.py
 ```
 
-### 5. Populate Expenses table data
+### 3. Populate Expenses table data
 ```bash
 python scripts/populate_expenses.py
 ```
 
-### 6. Populate Expenses table with random Null /blank data
+### 4. Populate Expenses table with random Null /blank data
 ```bash
 python scripts/populate_expenses_with_blanks.py
 ```
