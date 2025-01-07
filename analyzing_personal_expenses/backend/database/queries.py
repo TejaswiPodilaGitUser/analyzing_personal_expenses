@@ -13,21 +13,10 @@ FETCH_USER_CATEGORIES = """
 SELECT DISTINCT c.category_name
 FROM expenses e
 JOIN categories c ON e.category_id = c.category_id
-WHERE e.user_id = %s
-"""
-
-# To fetch all Categories for a user in a specific year
-FETCH_USER_CATEGORIES = """
-SELECT DISTINCT c.category_name
-FROM expenses e
-JOIN categories c ON e.category_id = c.category_id
 LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id AND s.category_id = c.category_id
-WHERE e.amount_paid IS NOT NULL
-AND e.category_id IS NOT NULL
-AND (e.subcategory_id IS NOT NULL OR s.subcategory_name IS NULL)
-AND (s.subcategory_name IS NULL OR s.subcategory_name != 'Uncategorized')
 """
 
+# Base query to fetch user expenses with all data (no null value filtering)
 FETCH_USER_EXPENSES_BASE_QUERY = """
 SELECT 
 e.expense_date,
@@ -37,8 +26,13 @@ e.amount_paid
 FROM expenses e
 JOIN categories c ON e.category_id = c.category_id
 LEFT JOIN subcategories s ON e.subcategory_id = s.subcategory_id AND s.category_id = c.category_id
-WHERE e.amount_paid IS NOT NULL
-AND e.category_id IS NOT NULL
-AND (e.subcategory_id IS NOT NULL OR s.subcategory_name IS NULL)  -- Allow NULL subcategory_id or exclude NULL values
-AND s.subcategory_name != 'Uncategorized'
+where 1=1 
+"""
+
+
+FETCH_SUBCATEGORIES="""
+SELECT DISTINCT s.subcategory_id, s.subcategory_name
+FROM subcategories s
+JOIN expenses e ON s.subcategory_id = e.subcategory_id
+WHERE 1=1
 """

@@ -10,7 +10,7 @@ def plot_pie_chart(data, title, labels, chart_size=(6, 4), label_fontsize=10, la
         data,
         labels=labels,  # Category names as labels
         autopct='%1.1f%%',
-        startangle=140,
+        startangle=90,
         textprops={'fontsize': label_fontsize},
         pctdistance=0.85,  # Move percentage labels slightly inward
         labeldistance=1.1  # Move category labels slightly outward

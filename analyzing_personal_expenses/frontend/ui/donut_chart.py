@@ -10,7 +10,7 @@ def plot_donut_chart(data, title, labels, chart_size=(5, 3), label_fontsize=10, 
         data,
         labels=labels,  # Category names as labels
         autopct='%1.1f%%',
-        startangle=140,
+        startangle=90,
         textprops={'fontsize': label_fontsize},
         wedgeprops={'width': hole_radius}  # Create the hole in the center
     )

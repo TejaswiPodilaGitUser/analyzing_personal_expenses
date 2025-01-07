@@ -7,21 +7,23 @@ from frontend.ui.plot_yearly_expenses import PlotYearlyExpenses
 from frontend.ui.plot_subcategory_expenses import PlotSubcategoryExpenses
 from frontend.ui.plot_data_insights import PlotDataInsights
 from backend.database.db_operations import DatabaseOperations
-#from frontend.ui.horizontal_bar_chart import plot_horizontal_bar_chart
-
+from backend.data_cleaner import DataCleaner
 
 class DataVisualization:
-    def __init__(self, user_id=None):
+    def __init__(self, user_id=None, df=None):
         self.user_id = user_id
         self.db_ops = DatabaseOperations()
         self.plot_monthly = PlotMonthlyExpenses()
         self.plot_yearly = PlotYearlyExpenses()
         self.plot_subcategory = PlotSubcategoryExpenses()
         self.plot_insights = PlotDataInsights()
+        
+        # Data cleaning is handled here only if df is provided
+        if df is not None:
+            self.data_cleaner = DataCleaner(df)
 
     def get_user_expenses(self, user_id='ALL Users', selected_year=None, selected_month=None):
         """Fetch user expenses."""
-
         try:
             df = self.db_ops.generate_expense_query(
                 user_id=self.user_id,
@@ -31,6 +33,10 @@ class DataVisualization:
 
             if df.empty:
                 raise ValueError("No expenses found for the selected user and period.")
+            
+            # Clean data using DataCleaner if it is initialized
+            if hasattr(self, 'data_cleaner'):
+                df = self.data_cleaner.clean_data(df)
             return df
         except Exception as e:
             print(f"Error fetching expenses: {e}")
@@ -53,13 +59,7 @@ class DataVisualization:
         if df.empty:
             return pd.DataFrame(columns=['category_name', 'total_amount'])
 
-        df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
-        df = df.dropna(subset=['total_amount'])
-
-        if df.empty:
-            st.warning("No valid data after cleaning.")
-            return pd.DataFrame()
-
+        df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce').fillna(0)
         if selected_year and selected_month:
             df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
             df['expense_year'] = df['expense_date'].dt.year
@@ -83,51 +83,44 @@ class DataVisualization:
                 st.warning("No data available for the selected filters.")
                 return pd.DataFrame()
 
-            # Ensure that 'total_amount' is numeric
             if 'amount_paid' not in df.columns:
                 st.warning("'amount_paid' column is missing from the data.")
                 return pd.DataFrame()
 
-            df['total_amount'] = pd.to_numeric(df['amount_paid'], errors='coerce')
-            df = df.dropna(subset=['total_amount'])  # Drop rows where 'total_amount' is NaN
+            # Normalize the 'total_amount' to handle any missing or malformed data
+            df['total_amount'] = pd.to_numeric(df['amount_paid'], errors='coerce').fillna(df['amount_paid'].mean())
 
-            if df.empty:
-                st.warning("No valid data available after cleaning.")
-                return pd.DataFrame()
-
-            # Add year and month columns if needed
             if selected_year or selected_month:
                 if 'expense_date' in df.columns:
                     df['expense_date'] = pd.to_datetime(df['expense_date'], errors='coerce')
                     df['expense_year'] = df['expense_date'].dt.year
                     df['expense_month'] = df['expense_date'].dt.strftime('%B')
 
-            # Filter by year and month if specified
             if selected_year and selected_month:
                 df = df[
                     (df['expense_year'] == int(selected_year)) &
                     (df['expense_month'].str.lower() == selected_month.lower())
                 ]
 
-            # Filter by category if specified
             if category and category != "All Categories":
-                df = df[df['category_name'] == category]
+                # Normalize both category names to lowercase to avoid case-sensitivity issues
+                category = category.strip().lower()
+                df = df[df['category_name'].str.strip().str.lower() == category]
 
-            # Aggregate by 'subcategory_name' using 'total_amount'
+            # Now, let's sum the amounts grouped by 'subcategory_name' (and any filters applied)
             subcategory_df = df.groupby('subcategory_name', as_index=False).agg(
                 total_amount=('total_amount', 'sum')
             )
 
-            # Check if the aggregation is successful
-            if subcategory_df.empty or 'total_amount' not in subcategory_df.columns:
-               # st.warning("No valid subcategory data available after aggregation.")
-                return pd.DataFrame()
-
+            # Check if the subcategory totals are matching expected values
+            # st.write("Aggregated Subcategory Data:", subcategory_df)
+            
             return subcategory_df
 
         except Exception as e:
             st.error(f"Error fetching subcategory expenses: {e}")
             return pd.DataFrame()
+
 
     def display_subcategory_expenses(self, df, selected_year=None, selected_month=None, category=None):
         """
@@ -138,17 +131,15 @@ class DataVisualization:
             return
 
         try:
-            subcategory_df = df;
+            subcategory_df = df
 
             if not subcategory_df.empty:
-                # Use fetch_and_plot to display the subcategory chart
                 self.plot_subcategory.fetch_and_plot(
                     subcategory_df,
                     selected_year=selected_year,
                     selected_month=selected_month,
                     category=category
                 )
-
             else:
                 st.warning("No valid subcategory data available to display.")
         except Exception as e:

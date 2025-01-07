@@ -3,6 +3,7 @@ import random
 from faker import Faker
 import os
 from dotenv import load_dotenv
+import datetime  # Import datetime module
 
 # Load environment variables
 load_dotenv()
@@ -47,14 +48,18 @@ def populate_expenses(n=50):
         subcategory_id = random.choice(subcategory_ids) if subcategory_ids else None
         
         amount_paid = round(random.uniform(10.0, 500.0), 2)
-        expense_date = fake.date_between(start_date='-5y', end_date='now')
+        
+        # Create random creation_date between 2020 and 2025
+        start_date = datetime.date(2020, 1, 1)  # Start date: January 1, 2020
+        end_date = datetime.date(2025, 12, 31)  # End date: December 31, 2025
+        creation_date = fake.date_between(start_date=start_date, end_date=end_date)
         
         try:
             cursor.execute(
                 """INSERT INTO expenses 
-                (user_id, category_id, subcategory_id, amount_paid, expense_date, payment_mode_id)
-                VALUES (%s, %s, %s, %s, %s, %s)""",
-                (user_id, category_id, subcategory_id, amount_paid, expense_date, payment_mode_id)
+                (user_id, category_id, subcategory_id, amount_paid, expense_date, payment_mode_id, creation_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (user_id, category_id, subcategory_id, amount_paid, creation_date, payment_mode_id, creation_date)
             )
         except mysql.connector.Error as err:
             print(f"❌ Error inserting record {i+1}: {err}")
