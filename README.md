@@ -1,8 +1,12 @@
 # Analyzing Personal Expenses
 
-<img width="1675" alt="image" src="https://github.com/user-attachments/assets/76990c1c-943d-4638-97a9-143eaf861dca" />
+<img width="1505" alt="image" src="https://github.com/user-attachments/assets/8edfaf2b-9300-4008-afb7-9d5f393d80a5" />
 
-<img width="1691" alt="image" src="https://github.com/user-attachments/assets/a1a0d921-3907-430e-b544-87a1de8c7ef4" />
+<img width="1495" alt="image" src="https://github.com/user-attachments/assets/25befc08-a42f-44b9-a9e7-635529a44371" />
+
+<img width="1468" alt="image" src="https://github.com/user-attachments/assets/1477d30e-0eb9-4512-8b70-e1b504f8a41d" />
+
+
 
 ---
 
@@ -85,38 +89,49 @@ python scripts/populate_expenses.py
 ```bash
 python scripts/populate_expenses_with_blanks.py
 ```
-## **Exploratory Data Analysis (EDA) Overview**
+## Exploratory Data Analysis (EDA) Overview
 
 The Exploratory Data Analysis (EDA) for this project focuses on understanding the structure and patterns within the personal expenses dataset. The following steps were performed:
 
-1. **Data Cleaning**: 
-   - Missing values were identified and handled by filling with the mode for categorical data and the mean for numerical data. 
-   - Rows with critical missing data were dropped to ensure data quality.
-   - Inconsistent or missing identifiers were filled by merging with reference data for categories and subcategories.
+### 1. Data Cleaning
 
-2. **Descriptive Statistics**:
-   - Basic statistics were calculated for numerical fields, including mean, median, and standard deviation, to understand the distribution and variability.
-   - Categorical data were summarized to identify the most frequent categories and subcategories.
+The data cleaning process ensures the dataset is accurate and ready for analysis. It involves handling missing values, standardizing date formats, and ensuring consistency in numerical data. Key steps include:
 
-3. **Data Visualization**:
-   - **Expense Trends**: Monthly and yearly expenses were visualized using bar charts and pie charts to reveal spending patterns.
-   - **Category Breakdown**: Visualizations were created to explore the distribution of expenses across various categories and subcategories.
-   - **Trends Over Time**: Line charts were used to identify spending trends over time, helping to uncover patterns and potential seasonal fluctuations.
+1. **Handling Missing Values**: Missing values in categorical and numerical data are filled with the mode and mean, respectively, while critical missing data is dropped.
+2. **Date Formatting**: Dates are standardized into a consistent format for easier analysis.
+3. **Validating Amounts**: Non-numeric values in the `amount_paid` column are handled and converted to valid numeric values.
 
-4. **Insights Generation**:
-   - Key insights were derived, such as identifying the highest and lowest spending categories, seasonal trends, and areas with potential for cost-saving.
+These steps improve the quality and consistency of the dataset, making it suitable for meaningful insights and visualizations.
 
-5. **Data Export**:
-   - The cleaned and processed dataset was exported to CSV files for further analysis or reporting.
+### 2. Descriptive Statistics
 
-The EDA process has provided valuable insights into the personal expense patterns, helping to inform decision-making and improve budget management.
+- **Numerical Data**: Basic statistics (mean, median, standard deviation) were calculated to understand the distribution and variability of the data.
+- **Categorical Data**: Frequency analysis was conducted to identify the most common categories and subcategories.
 
-### 📊 Features
-User Selection: Select different users to analyze their expenses.
-Visualization Options: Choose between monthly and yearly visualizations.
-Detailed View: Drill down into specific categories and subcategories.
-Export Data: Export the analyzed data for further use.
+### 3. Data Visualization
 
+- **Expense Trends**: Monthly and yearly expenses were visualized using **pie**, **bar**, **line**, **scatter**, and **donut** plots to reveal spending patterns.
+- **Category Breakdown**: A **horizontal bar chart** was created to explore the distribution of expenses across various categories.
+- **Payment Mode Breakdown**: A **bar chart** visualizes payment mode distribution to analyze transaction types.
+
+### 4. Insights Generation
+
+Key insights were derived from the data, including:
+- **Highest and Lowest Spending Categories**: The top categories with the highest and lowest expenditures.
+- **Max and Min Payment Methods**: The most and least frequently used payment methods.
+
+### 5. Data Export (Removed)
+
+The data export option was removed in this version to streamline the user experience.
+
+## Features
+
+- **User Selection**: Users can select different individuals to analyze their personal expenses.
+- **Visualization Options**: Choose between **monthly** and **yearly** visualizations of expenses.
+- **Detailed Category Breakdown**: Drill down into specific categories and subcategories to gain deeper insights.
+- **Subcategory Expenses for Category**: Based on the selected category, all subcategories will be displayed with their total expenses.
+- **Payment Mode Insights**: View insights into the most frequently used payment methods, such as **Online**, **Cash**, **Credit Card**, etc.
+  
 ## 🚀 Run the Application
 Start the Streamlit application:
 ```bash
