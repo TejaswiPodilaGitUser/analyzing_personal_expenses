@@ -106,36 +106,53 @@ python scripts/populate_expenses_with_blanks.py
 
 The Exploratory Data Analysis (EDA) for this project focuses on understanding the structure and patterns within the personal expenses dataset. The following steps were performed:
 
-### 1. Data Cleaning
+### 📥 1. Data Collection & Loading
+
+Raw data was gathered from various sources and loaded into a usable format (e.g., DataFrames) using Pandas for analysis. This foundational step ensured we had clean, structured data for further exploration and analysis.
+
+### 🧹 2. Data Cleaning
 
 The data cleaning process ensures the dataset is accurate and ready for analysis. It involves handling missing values, standardizing date formats, and ensuring consistency in numerical data. Key steps include:
 
-1. **Handling Missing Values**: Missing values in categorical and numerical data are filled with the mode and mean, respectively, while critical missing data is dropped.
-2. **Date Formatting**: Dates are standardized into a consistent format for easier analysis.
-3. **Validating Amounts**: Non-numeric values in the `amount_paid` column are handled and converted to valid numeric values.
+1. **Handling Missing Values**: Missing values in categorical and numerical data were filled with the mode and mean, respectively, while critical missing data was dropped.
+2. **Date Formatting**: Dates were standardized into a consistent format for easier analysis.
+3. **Validating Amounts**: Non-numeric values in the `amount_paid` column were handled and converted to valid numeric values.
 
 These steps improve the quality and consistency of the dataset, making it suitable for meaningful insights and visualizations.
 
-### 2. Descriptive Statistics
+### 🔍 3. Data Inspection
+
+The dataset's structure, column names, and data types were explored to identify anomalies, inconsistencies, and patterns, which guided further analysis.
+
+### 📊 4. Data Analysis
+
+The data was analyzed through univariate, bivariate, and multivariate techniques to uncover trends, patterns, and relationships between variables. Descriptive statistics were used:
 
 - **Numerical Data**: Basic statistics (mean, median, standard deviation) were calculated to understand the distribution and variability of the data.
 - **Categorical Data**: Frequency analysis was conducted to identify the most common categories and subcategories.
 
-### 3. Data Visualization
+### 🛠️ 5. Feature Engineering
 
-- **Expense Trends**: Monthly and yearly expenses were visualized using **pie**, **bar**, **line**, **scatter**, and **donut** plots to reveal spending patterns.
-- **Category Breakdown**: A **horizontal bar chart** was created to explore the distribution of expenses across various categories.
-- **Payment Mode Breakdown**: A **bar chart** visualizes payment mode distribution to analyze transaction types.
+Features were created or transformed to enhance the analysis and improve visualization. This step helped reveal hidden insights from the data.
 
-### 4. Insights Generation
+### 💡 6. Insights Extraction
 
 Key insights were derived from the data, including:
+
 - **Highest and Lowest Spending Categories**: The top categories with the highest and lowest expenditures.
 - **Max and Min Payment Methods**: The most and least frequently used payment methods.
 
-### 5. Data Export (Removed)
+### 📊 7. Data Visualization
 
-The data export option was removed in this version to streamline the user experience.
+Various visualizations were created to analyze and reveal spending patterns:
+
+- **Expense Trends**: Monthly and yearly expenses were visualized using pie, bar, line, scatter, and donut plots.
+- **Category Breakdown**: A horizontal bar chart was created to explore the distribution of expenses across various categories.
+- **Payment Mode Breakdown**: A bar chart visualized payment mode distribution to analyze transaction types.
+
+### 🚀 8. Final Insights
+
+The data cleaning, analysis, and visualization steps enabled us to generate actionable insights that inform decision-making and help understand personal expense trends effectively.
 
 ## Features
 
