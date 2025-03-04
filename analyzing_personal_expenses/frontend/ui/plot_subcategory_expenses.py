@@ -25,7 +25,8 @@ class PlotSubcategoryExpenses:
                 return
             
             # Ensure 'total_amount' is numeric
-            df['total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
+            df = df.copy()  # Create a copy to avoid SettingWithCopyWarning
+            df.loc[:, 'total_amount'] = pd.to_numeric(df['total_amount'], errors='coerce')
             df = df.dropna(subset=['total_amount'])
 
             if df.empty:
